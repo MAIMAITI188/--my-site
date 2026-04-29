@@ -1,0 +1,889 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>挑码助手</title>
+<style>
+*{box-sizing:border-box}
+
+:root{
+  --bg:#edf6ef;
+  --card:#ffffff;
+  --line:#d6ead8;
+  --text:#163322;
+  --muted:#5f7b69;
+  --brand:#10b15a;
+  --brand-dark:#0a8a45;
+  --shadow:0 14px 34px rgba(17,63,34,.08);
+}
+
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at top left,rgba(16,177,90,.14),transparent 28%),
+    linear-gradient(180deg,#f6fbf7 0%,var(--bg) 100%);
+  color:var(--text);
+  font-family:Arial,"Microsoft YaHei",sans-serif;
+}
+
+.shell{
+  width:min(1180px,100%);
+  margin:0 auto;
+  padding:20px 16px 30px;
+}
+
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  margin-bottom:16px;
+}
+
+.back-btn{
+  border:0;
+  border-radius:999px;
+  padding:10px 16px;
+  background:#e7f7ec;
+  color:var(--brand-dark);
+  font-size:14px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.hero{
+  background:linear-gradient(135deg,#0ea84f,#0d8c44);
+  color:#fff;
+  border-radius:26px;
+  padding:16px 22px;
+  box-shadow:0 18px 42px rgba(12,110,55,.22);
+}
+
+.pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:110px;
+  padding:10px 14px;
+  border-radius:999px;
+  background:rgba(255,255,255,.18);
+  font-size:13px;
+  font-weight:bold;
+}
+
+.layout{
+  display:grid;
+  grid-template-columns:360px minmax(0,1fr);
+  gap:18px;
+  margin-top:18px;
+}
+
+.panel{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:22px;
+  box-shadow:var(--shadow);
+}
+
+.panel-pad{
+  padding:18px;
+}
+
+.panel h2{
+  margin:0 0 12px;
+  font-size:20px;
+}
+
+.sub{
+  margin:0 0 14px;
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.5;
+}
+
+.actions{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+
+.action-btn{
+  border:0;
+  border-radius:14px;
+  padding:12px 10px;
+  cursor:pointer;
+  font-size:14px;
+  font-weight:bold;
+  color:#fff;
+  background:linear-gradient(135deg,#16b75d,#0d9148);
+}
+
+.action-btn.alt{
+  background:linear-gradient(135deg,#2f7df0,#1b62c8);
+}
+
+.action-btn.soft{
+  background:linear-gradient(135deg,#4b6352,#335041);
+}
+
+.section{
+  margin-top:16px;
+  padding-top:16px;
+  border-top:1px solid #edf3ee;
+}
+
+.section:first-of-type{
+  margin-top:0;
+  padding-top:0;
+  border-top:0;
+}
+
+.section-title{
+  margin:0 0 10px;
+  font-size:15px;
+  font-weight:bold;
+}
+
+.chip-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.chip{
+  border:1px solid #d8e6da;
+  background:#f7fbf8;
+  color:var(--text);
+  border-radius:999px;
+  padding:8px 12px;
+  font-size:13px;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.15s;
+}
+
+.chip.active{
+  border-color:transparent;
+  background:linear-gradient(135deg,#15b95f,#0d9349);
+  color:#fff;
+  box-shadow:0 10px 18px rgba(14,147,73,.18);
+}
+
+.chip.red.active{background:linear-gradient(135deg,#f04a4a,#bf2323)}
+.chip.blue.active{background:linear-gradient(135deg,#4b90ff,#2364d1)}
+.chip.green.active{background:linear-gradient(135deg,#1dc86a,#0a9548)}
+
+.summary-card{
+  margin-top:16px;
+  padding:14px;
+  border-radius:18px;
+  background:#f7fbf8;
+}
+
+.summary-line{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:8px;
+  font-size:14px;
+}
+
+.summary-line:last-child{
+  margin-bottom:0;
+}
+
+.selected-wrap{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+  min-height:64px;
+  margin-top:12px;
+  padding:10px;
+  border:1px solid #deebdf;
+  border-radius:16px;
+  background:#eef7f0;
+}
+
+.selected-ball{
+  width:42px;
+  height:42px;
+  flex:0 0 42px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+  color:#fff;
+  font-size:15px;
+  font-weight:900;
+  text-shadow:0 1px 2px rgba(0,0,0,.22);
+  border:1px solid rgba(255,255,255,.24);
+  box-shadow:0 8px 18px rgba(0,0,0,.14);
+}
+
+.selected-ball span{
+  position:relative;
+  z-index:1;
+}
+
+.selected-ball::after{
+  content:"";
+  position:absolute;
+  inset:6px;
+  border-radius:50%;
+  background:rgba(255,255,255,.18);
+}
+
+.selected-ball.red{background:linear-gradient(145deg,#ff5b5b,#c81d1d)}
+.selected-ball.blue{background:linear-gradient(145deg,#4e97ff,#1f67d2)}
+.selected-ball.green{background:linear-gradient(145deg,#20cd6d,#0d994b)}
+.selected-ball.ghost{
+  color:#7b9483;
+  background:linear-gradient(145deg,#f7fbf8,#e6efe8);
+  border:1px dashed #c9d9cd;
+  box-shadow:none;
+}
+
+.placeholder{
+  color:#90a697;
+  font-size:13px;
+  padding-top:10px;
+}
+
+.board{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+  gap:12px;
+}
+
+.num-card{
+  position:relative;
+  padding:12px 10px 10px;
+  border-radius:18px;
+  border:1px solid #e1ede2;
+  background:#fff;
+  cursor:pointer;
+  transition:.18s;
+}
+
+.num-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 22px rgba(17,63,34,.09);
+}
+
+.num-card.dim{
+  opacity:.28;
+  filter:grayscale(.2);
+}
+
+.num-card.selected{
+  border-color:#0ea84f;
+  box-shadow:0 12px 26px rgba(14,168,79,.18);
+}
+
+.ball{
+  width:58px;
+  height:58px;
+  margin:0 auto 10px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  color:#111;
+  font-size:22px;
+  font-weight:900;
+  font-family:"Arial Black","Impact","Microsoft YaHei",sans-serif;
+  box-shadow:
+    inset 0 4px 8px rgba(255,255,255,.38),
+    inset 0 -7px 12px rgba(0,0,0,.24),
+    0 10px 18px rgba(0,0,0,.14);
+}
+
+.ball::after{
+  content:"";
+  position:absolute;
+  width:74%;
+  height:74%;
+  top:12%;
+  left:13%;
+  border-radius:50%;
+  background:rgba(255,255,255,.92);
+}
+
+.ball span{
+  position:relative;
+  z-index:1;
+}
+
+.ball.red{background:linear-gradient(145deg,#ff5b5b,#bb1111)}
+.ball.blue{background:linear-gradient(145deg,#52a0ff,#0e5fd3)}
+.ball.green{background:linear-gradient(145deg,#1ed16e,#078d44)}
+
+.meta{
+  text-align:center;
+  line-height:1.35;
+}
+
+.meta strong{
+  display:block;
+  font-size:14px;
+}
+
+.meta span{
+  display:block;
+  color:var(--muted);
+  font-size:12px;
+}
+
+.tag{
+  position:absolute;
+  right:10px;
+  top:10px;
+  min-width:26px;
+  height:26px;
+  border-radius:999px;
+  padding:0 8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#eaf8ef;
+  color:var(--brand-dark);
+  font-size:11px;
+  font-weight:bold;
+}
+
+@media(max-width:980px){
+  .layout{grid-template-columns:1fr}
+  .board{grid-template-columns:repeat(5,minmax(0,1fr))}
+}
+
+@media(max-width:640px){
+  .shell{padding:12px 10px 24px}
+  .hero{border-radius:20px;padding:18px 16px 14px}
+  .actions{grid-template-columns:1fr 1fr}
+  .board{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .num-card{padding:10px 8px 9px;border-radius:16px}
+  .ball{width:52px;height:52px;font-size:20px}
+  .meta strong{font-size:13px}
+  .meta span{font-size:11px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="topbar" id="topbar">
+    <button class="back-btn" type="button" onclick="goBack()">返回</button>
+  </div>
+
+  <div class="hero">
+    <div class="pill" id="matchCount">命中 49 个</div>
+  </div>
+
+  <div class="layout">
+    <div class="panel">
+      <div class="panel-pad">
+        <h2>快速筛选</h2>
+        <p class="sub">同一组选中多个条件按“或”匹配，不同组之间按“且”叠加。</p>
+
+        <div class="actions">
+          <button class="action-btn" type="button" onclick="randomPick(5)">机选 5 个</button>
+          <button class="action-btn" type="button" onclick="randomPick(7)">机选 7 个</button>
+          <button class="action-btn" type="button" onclick="randomPick(9)">机选 9 个</button>
+          <button class="action-btn alt" type="button" onclick="selectMatches()">全选筛中</button>
+          <button class="action-btn alt" type="button" onclick="invertMatches()">反选筛中</button>
+          <button class="action-btn alt" type="button" onclick="copySelected()">复制号码</button>
+          <button class="action-btn soft" type="button" onclick="clearFilters()">清空筛选</button>
+          <button class="action-btn soft" type="button" onclick="clearSelected()">清空已选</button>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-line">
+            <span>已开条件</span>
+            <strong id="activeFilterCount">0 项</strong>
+          </div>
+          <div class="summary-line">
+            <span>当前筛中</span>
+            <strong id="filteredNums">01 02 03 04 05 ...</strong>
+          </div>
+          <div class="summary-line">
+            <span>已选数量</span>
+            <strong id="selectedCount">0 个</strong>
+          </div>
+          <div class="selected-wrap" id="selectedWrap"></div>
+          <div class="placeholder" id="selectedPlaceholder">选择筛选条件后会自动生成号码，可直接复制；没有筛选时也可手动点球挑号</div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">波色</div>
+          <div class="chip-row" id="chips-color"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">大小 / 单双</div>
+          <div class="chip-row" id="chips-size"></div>
+          <div class="chip-row" id="chips-parity" style="margin-top:8px"></div>
+          <div class="chip-row" id="chips-sum-parity" style="margin-top:8px"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">区间 / 头数</div>
+          <div class="chip-row" id="chips-range"></div>
+          <div class="chip-row" id="chips-head" style="margin-top:8px"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">五行</div>
+          <div class="chip-row" id="chips-element"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">生肖</div>
+          <div class="chip-row" id="chips-zodiac"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">家禽 / 野兽</div>
+          <div class="chip-row" id="chips-animal-type"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">尾数 / 尾型</div>
+          <div class="chip-row" id="chips-tail"></div>
+          <div class="chip-row" id="chips-tail-size" style="margin-top:8px"></div>
+          <div class="chip-row" id="chips-tail-parity" style="margin-top:8px"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">合值</div>
+          <div class="chip-row" id="chips-sum-value"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-pad">
+        <h2>号码看板</h2>
+        <p class="sub">点击号码可加入或取消已选。未命中的号码会自动变淡，方便集中看结果。</p>
+        <div class="board" id="board"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const numberMap = {
+  "01": { color:"red", element:"水", zodiac:"马" },
+  "02": { color:"red", element:"火", zodiac:"蛇" },
+  "03": { color:"blue", element:"火", zodiac:"龙" },
+  "04": { color:"blue", element:"金", zodiac:"兔" },
+  "05": { color:"green", element:"金", zodiac:"虎" },
+  "06": { color:"green", element:"土", zodiac:"牛" },
+  "07": { color:"red", element:"土", zodiac:"鼠" },
+  "08": { color:"red", element:"木", zodiac:"猪" },
+  "09": { color:"blue", element:"木", zodiac:"狗" },
+  "10": { color:"blue", element:"火", zodiac:"鸡" },
+  "11": { color:"green", element:"火", zodiac:"猴" },
+  "12": { color:"red", element:"金", zodiac:"羊" },
+  "13": { color:"red", element:"金", zodiac:"马" },
+  "14": { color:"blue", element:"水", zodiac:"蛇" },
+  "15": { color:"blue", element:"水", zodiac:"龙" },
+  "16": { color:"green", element:"木", zodiac:"兔" },
+  "17": { color:"green", element:"木", zodiac:"虎" },
+  "18": { color:"red", element:"火", zodiac:"牛" },
+  "19": { color:"red", element:"火", zodiac:"鼠" },
+  "20": { color:"blue", element:"土", zodiac:"猪" },
+  "21": { color:"green", element:"土", zodiac:"狗" },
+  "22": { color:"green", element:"水", zodiac:"鸡" },
+  "23": { color:"red", element:"水", zodiac:"猴" },
+  "24": { color:"red", element:"木", zodiac:"羊" },
+  "25": { color:"blue", element:"木", zodiac:"马" },
+  "26": { color:"blue", element:"金", zodiac:"蛇" },
+  "27": { color:"green", element:"金", zodiac:"龙" },
+  "28": { color:"green", element:"土", zodiac:"兔" },
+  "29": { color:"red", element:"土", zodiac:"虎" },
+  "30": { color:"red", element:"水", zodiac:"牛" },
+  "31": { color:"blue", element:"水", zodiac:"鼠" },
+  "32": { color:"green", element:"火", zodiac:"猪" },
+  "33": { color:"green", element:"火", zodiac:"狗" },
+  "34": { color:"red", element:"金", zodiac:"鸡" },
+  "35": { color:"red", element:"金", zodiac:"猴" },
+  "36": { color:"blue", element:"土", zodiac:"羊" },
+  "37": { color:"blue", element:"土", zodiac:"马" },
+  "38": { color:"green", element:"木", zodiac:"蛇" },
+  "39": { color:"green", element:"木", zodiac:"龙" },
+  "40": { color:"red", element:"火", zodiac:"兔" },
+  "41": { color:"blue", element:"火", zodiac:"虎" },
+  "42": { color:"blue", element:"金", zodiac:"牛" },
+  "43": { color:"green", element:"金", zodiac:"鼠" },
+  "44": { color:"green", element:"水", zodiac:"猪" },
+  "45": { color:"red", element:"水", zodiac:"狗" },
+  "46": { color:"red", element:"木", zodiac:"鸡" },
+  "47": { color:"blue", element:"木", zodiac:"猴" },
+  "48": { color:"blue", element:"火", zodiac:"羊" },
+  "49": { color:"green", element:"火", zodiac:"马" }
+};
+
+const labels = {
+  color:{ red:"红波", blue:"蓝波", green:"绿波" },
+  size:{ small:"小", big:"大" },
+  parity:{ odd:"单", even:"双" },
+  sumParity:{ odd:"合单", even:"合双" },
+  animalType:{ poultry:"家禽", beast:"野兽" }
+};
+
+const filterState = {
+  color:new Set(),
+  size:new Set(),
+  parity:new Set(),
+  sumParity:new Set(),
+  range:new Set(),
+  head:new Set(),
+  element:new Set(),
+  zodiac:new Set(),
+  animalType:new Set(),
+  tail:new Set(),
+  tailSize:new Set(),
+  tailParity:new Set(),
+  sumValue:new Set()
+};
+
+function loadSelectedNumbers(){
+  try{
+    const list = JSON.parse(localStorage.getItem("tmzs_selected") || "[]");
+    if(!Array.isArray(list)){
+      return [];
+    }
+    return list.filter(value => /^(0[1-9]|[1-4][0-9])$/.test(String(value)));
+  }catch(error){
+    return [];
+  }
+}
+
+const selected = new Set(loadSelectedNumbers());
+
+const numbers = Array.from({ length:49 }, (_, index) => {
+  const num = index + 1;
+  const key = String(num).padStart(2, "0");
+  const info = numberMap[key];
+  const digitSum = key.split("").reduce((total, digit) => total + Number(digit), 0);
+  const animalType = ["牛","马","羊","鸡","狗","猪"].includes(info.zodiac) ? "poultry" : "beast";
+
+  return {
+    key,
+    num,
+    color:info.color,
+    colorLabel:labels.color[info.color],
+    element:info.element,
+    zodiac:info.zodiac,
+    animalType,
+    animalTypeLabel:labels.animalType[animalType],
+    size:num >= 25 ? "big" : "small",
+    sizeLabel:num >= 25 ? "大" : "小",
+    parity:num % 2 ? "odd" : "even",
+    parityLabel:num % 2 ? "单" : "双",
+    sumParity:digitSum % 2 ? "odd" : "even",
+    sumParityLabel:digitSum % 2 ? "合单" : "合双",
+    range:num <= 16 ? "r1" : num <= 32 ? "r2" : "r3",
+    rangeLabel:num <= 16 ? "01-16" : num <= 32 ? "17-32" : "33-49",
+    head:String(Math.floor(num / 10)),
+    tail:String(num % 10),
+    tailSize:num % 10 >= 5 ? "big" : "small",
+    tailSizeLabel:num % 10 >= 5 ? "大尾" : "小尾",
+    tailParity:num % 10 % 2 ? "odd" : "even",
+    tailParityLabel:num % 10 % 2 ? "单尾" : "双尾",
+    sumValue:String(digitSum)
+  };
+});
+
+const chipGroups = {
+  color:[
+    { value:"red", label:"红波", className:"red" },
+    { value:"blue", label:"蓝波", className:"blue" },
+    { value:"green", label:"绿波", className:"green" }
+  ],
+  size:[
+    { value:"big", label:"大" },
+    { value:"small", label:"小" }
+  ],
+  parity:[
+    { value:"odd", label:"单" },
+    { value:"even", label:"双" }
+  ],
+  sumParity:[
+    { value:"odd", label:"合单" },
+    { value:"even", label:"合双" }
+  ],
+  range:[
+    { value:"r1", label:"01-16" },
+    { value:"r2", label:"17-32" },
+    { value:"r3", label:"33-49" }
+  ],
+  head:["0","1","2","3","4"].map(value => ({ value, label:value + "头" })),
+  element:["金","木","水","火","土"].map(value => ({ value, label:value })),
+  zodiac:["鼠","牛","虎","兔","龙","蛇","马","羊","猴","鸡","狗","猪"].map(value => ({ value, label:value })),
+  animalType:[
+    { value:"poultry", label:"家禽" },
+    { value:"beast", label:"野兽" }
+  ],
+  tail:["0","1","2","3","4","5","6","7","8","9"].map(value => ({ value, label:value + "尾" })),
+  tailSize:[
+    { value:"small", label:"小尾" },
+    { value:"big", label:"大尾" }
+  ],
+  tailParity:[
+    { value:"odd", label:"单尾" },
+    { value:"even", label:"双尾" }
+  ],
+  sumValue:Array.from({ length:13 }, (_, index) => {
+    const value = String(index + 1);
+    return { value, label:"合" + value };
+  })
+};
+
+const board = document.getElementById("board");
+const selectedWrap = document.getElementById("selectedWrap");
+const selectedPlaceholder = document.getElementById("selectedPlaceholder");
+const selectedCount = document.getElementById("selectedCount");
+const filteredNums = document.getElementById("filteredNums");
+const matchCount = document.getElementById("matchCount");
+const activeFilterCount = document.getElementById("activeFilterCount");
+
+function getActiveFilterCount(){
+  return Object.values(filterState).reduce((total, set) => total + set.size, 0);
+}
+
+function getChosenNumbers(matches = getMatches()){
+  return getActiveFilterCount() > 0
+    ? matches
+    : numbers.filter(item => selected.has(item.key));
+}
+
+function renderChipGroup(group, targetId){
+  const target = document.getElementById(targetId);
+  target.innerHTML = chipGroups[group].map(item => `
+    <button
+      type="button"
+      class="chip ${item.className || ""} ${filterState[group].has(item.value) ? "active" : ""}"
+      data-group="${group}"
+      data-value="${item.value}">
+      ${item.label}
+    </button>
+  `).join("");
+}
+
+function renderChips(){
+  renderChipGroup("color", "chips-color");
+  renderChipGroup("size", "chips-size");
+  renderChipGroup("parity", "chips-parity");
+  renderChipGroup("sumParity", "chips-sum-parity");
+  renderChipGroup("range", "chips-range");
+  renderChipGroup("head", "chips-head");
+  renderChipGroup("element", "chips-element");
+  renderChipGroup("zodiac", "chips-zodiac");
+  renderChipGroup("animalType", "chips-animal-type");
+  renderChipGroup("tail", "chips-tail");
+  renderChipGroup("tailSize", "chips-tail-size");
+  renderChipGroup("tailParity", "chips-tail-parity");
+  renderChipGroup("sumValue", "chips-sum-value");
+}
+
+function passesGroup(item, group){
+  const set = filterState[group];
+  if(!set.size) return true;
+  return set.has(item[group]);
+}
+
+function getMatches(){
+  return numbers.filter(item =>
+    passesGroup(item, "color") &&
+    passesGroup(item, "size") &&
+    passesGroup(item, "parity") &&
+    passesGroup(item, "sumParity") &&
+    passesGroup(item, "range") &&
+    passesGroup(item, "head") &&
+    passesGroup(item, "element") &&
+    passesGroup(item, "zodiac") &&
+    passesGroup(item, "animalType") &&
+    passesGroup(item, "tail") &&
+    passesGroup(item, "tailSize") &&
+    passesGroup(item, "tailParity") &&
+    passesGroup(item, "sumValue")
+  );
+}
+
+function renderSummary(matches){
+  const list = matches.map(item => item.key);
+  const activeCount = getActiveFilterCount();
+  filteredNums.textContent = list.length ? list.join(" ") : "暂无匹配";
+  matchCount.textContent = `命中 ${matches.length} 个`;
+  activeFilterCount.textContent = `${activeCount} 项`;
+
+  const chosen = getChosenNumbers(matches);
+  selectedCount.textContent = `${chosen.length} 个`;
+  selectedPlaceholder.style.display = chosen.length ? "none" : "block";
+
+  selectedWrap.innerHTML = chosen.length
+    ? chosen.map(item => `
+      <div class="selected-ball ${item.color}" title="${item.key} ${item.zodiac} ${item.element}">
+        <span>${item.key}</span>
+      </div>
+    `).join("")
+    : Array.from({ length:6 }, () => `
+      <div class="selected-ball ghost" aria-hidden="true"><span>--</span></div>
+    `).join("");
+
+  localStorage.setItem("tmzs_selected", JSON.stringify(Array.from(selected)));
+}
+
+function renderBoard(){
+  const matches = getMatches();
+  const matchSet = new Set(matches.map(item => item.key));
+  const activeCount = getActiveFilterCount();
+  const shouldDim = activeCount > 0 && matches.length > 0;
+
+  board.innerHTML = numbers.map(item => `
+    <button
+      type="button"
+      class="num-card ${shouldDim && !matchSet.has(item.key) ? "dim" : ""} ${(activeCount > 0 ? matchSet.has(item.key) : selected.has(item.key)) ? "selected" : ""}"
+      data-number="${item.key}">
+      <span class="tag">${item.tail}尾</span>
+      <div class="ball ${item.color}"><span>${item.key}</span></div>
+      <div class="meta">
+        <strong>${item.colorLabel}</strong>
+        <span>${item.zodiac} / ${item.animalTypeLabel} / ${item.element} / ${item.sizeLabel}${item.parityLabel} / ${item.sumParityLabel}</span>
+      </div>
+    </button>
+  `).join("");
+
+  renderSummary(matches);
+}
+
+function toggleFilter(group, value){
+  const set = filterState[group];
+  if(set.has(value)){
+    set.delete(value);
+  }else{
+    set.add(value);
+  }
+  renderChips();
+  renderBoard();
+}
+
+function toggleNumber(key){
+  if(getActiveFilterCount() > 0){
+    return;
+  }
+
+  if(selected.has(key)){
+    selected.delete(key);
+  }else{
+    selected.add(key);
+  }
+  renderBoard();
+}
+
+function clearFilters(){
+  Object.values(filterState).forEach(set => set.clear());
+  renderChips();
+  renderBoard();
+}
+
+function clearSelected(){
+  selected.clear();
+  renderBoard();
+}
+
+function randomPick(count){
+  const source = getMatches();
+  const pool = source.length >= count ? source : numbers;
+  const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, count);
+  selected.clear();
+  shuffled.forEach(item => selected.add(item.key));
+  renderBoard();
+}
+
+function selectMatches(){
+  const matches = getMatches();
+  selected.clear();
+  matches.forEach(item => selected.add(item.key));
+  renderBoard();
+}
+
+function invertMatches(){
+  const matches = getMatches();
+  matches.forEach(item => {
+    if(selected.has(item.key)){
+      selected.delete(item.key);
+    }else{
+      selected.add(item.key);
+    }
+  });
+  renderBoard();
+}
+
+function fallbackCopy(text){
+  const input = document.createElement("input");
+  input.value = text;
+  document.body.appendChild(input);
+  input.select();
+  document.execCommand("copy");
+  input.remove();
+  alert("已复制：" + text);
+}
+
+function copySelected(){
+  const text = getChosenNumbers()
+    .map(item => item.key)
+    .sort()
+    .join(" ");
+
+  if(!text){
+    alert("请先选择筛选条件或手动选择号码");
+    return;
+  }
+
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(text)
+      .then(() => alert("已复制：" + text))
+      .catch(() => fallbackCopy(text));
+    return;
+  }
+
+  fallbackCopy(text);
+}
+
+function goBack(){
+  if(document.referrer){
+    history.back();
+    return;
+  }
+  window.location.href = "WZZT.html";
+}
+
+document.addEventListener("click", event => {
+  const chip = event.target.closest(".chip");
+  if(chip){
+    toggleFilter(chip.dataset.group, chip.dataset.value);
+    return;
+  }
+
+  const numberCard = event.target.closest(".num-card");
+  if(numberCard){
+    toggleNumber(numberCard.dataset.number);
+  }
+});
+
+if(window.self !== window.top){
+  document.getElementById("topbar").style.display = "none";
+  document.querySelector(".shell").style.paddingTop = "14px";
+}
+
+renderChips();
+renderBoard();
+</script>
+</body>
+</html>

@@ -1,0 +1,996 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>新港天天彩后台</title>
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  min-height:100vh;
+  background:linear-gradient(135deg,#0f172a,#064e3b);
+  color:#fff;
+  font-family:Arial,"Microsoft YaHei",sans-serif;
+  padding:30px;
+}
+
+.box{
+  max-width:980px;
+  margin:auto;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.18);
+  padding:28px;
+  border-radius:22px;
+}
+
+h2{
+  margin:0 0 18px;
+}
+
+input,button{
+  padding:11px;
+  border:0;
+  border-radius:9px;
+  font-size:15px;
+}
+
+input{
+  background:#fff;
+  color:#111;
+}
+
+.top input{
+  width:100%;
+  margin-bottom:12px;
+}
+
+.module{
+  margin-bottom:18px;
+  padding:16px;
+  border-radius:16px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
+}
+
+.module-title{
+  margin:0 0 12px;
+  font-size:16px;
+  font-weight:bold;
+  color:#dcfce7;
+}
+
+.module-btn{
+  margin-top:12px;
+  background:#2563eb;
+}
+
+.module-btn:hover{
+  background:#1d4ed8;
+}
+
+.hint{
+  margin:4px 0 16px;
+  color:#bbf7d0;
+  font-size:14px;
+  line-height:1.6;
+}
+
+.head,
+.row{
+  display:grid;
+  grid-template-columns:80px 100px 84px 1fr 120px;
+  gap:10px;
+  align-items:center;
+}
+
+.head{
+  margin-bottom:8px;
+  color:#bbf7d0;
+  font-size:14px;
+}
+
+.row{
+  margin-bottom:10px;
+}
+
+.row b{
+  color:#fff;
+}
+
+.num-input{
+  width:100%;
+  text-align:center;
+  font-weight:bold;
+  font-size:18px;
+}
+
+.auto-note,
+.color-output{
+  width:100%;
+  font-weight:bold;
+}
+
+.auto-note[readonly],
+.color-output[readonly]{
+  background:#ecfdf5;
+  color:#064e3b;
+}
+
+.preview-ball{
+  width:54px;
+  height:54px;
+  margin:auto;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#111;
+  font-weight:900;
+  font-size:18px;
+  background:#e5e7eb;
+  box-shadow:
+    inset 0 4px 8px rgba(255,255,255,.4),
+    inset 0 -6px 10px rgba(0,0,0,.22),
+    0 8px 18px rgba(0,0,0,.28);
+}
+
+.preview-ball.red{background:linear-gradient(145deg,#ff4545,#b60000)}
+.preview-ball.blue{background:linear-gradient(145deg,#48a6ff,#0052c8)}
+.preview-ball.green{background:linear-gradient(145deg,#20d842,#0a9b27)}
+
+.row.invalid .num-input{
+  outline:2px solid #f87171;
+}
+
+button{
+  width:100%;
+  margin-top:16px;
+  background:#22c55e;
+  color:#fff;
+  font-size:18px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:hover{
+  background:#16a34a;
+}
+
+.msg{
+  min-height:22px;
+  margin-top:12px;
+  color:#86efac;
+  font-weight:bold;
+}
+
+.link-row{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-bottom:16px;
+}
+
+.link-btn{
+  display:block;
+  text-align:center;
+  text-decoration:none;
+  padding:12px;
+  margin-top:0;
+  border-radius:12px;
+  color:#fff;
+  font-size:15px;
+  font-weight:bold;
+  background:linear-gradient(135deg,#2f7df0,#1b62c8);
+}
+
+.admin-modal{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(3,10,8,.58);
+  z-index:9999;
+}
+
+.admin-modal.is-open{
+  display:flex;
+}
+
+.admin-panel{
+  width:min(980px,100%);
+  max-height:min(88vh,920px);
+  overflow:auto;
+  border-radius:24px;
+  background:#f5fff7;
+  color:#113724;
+  box-shadow:0 22px 60px rgba(0,0,0,.28);
+}
+
+.admin-panel-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:18px 20px 12px;
+  position:sticky;
+  top:0;
+  background:#f5fff7;
+}
+
+.admin-panel-head h3{
+  margin:0;
+  font-size:24px;
+}
+
+.admin-close{
+  width:42px;
+  height:42px;
+  margin:0;
+  border-radius:50%;
+  background:#d7f5df;
+  color:#0d7f3f;
+  font-size:24px;
+  line-height:1;
+}
+
+.history-manage-list{
+  padding:0 20px 20px;
+}
+
+.history-manage-empty{
+  padding:20px 0 8px;
+  color:#5f7d69;
+  font-size:16px;
+}
+
+.history-manage-item{
+  padding:16px 0;
+  border-top:1px solid #dcecdf;
+}
+
+.history-manage-item:first-child{
+  border-top:0;
+}
+
+.history-manage-meta{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+
+.history-manage-period{
+  font-size:20px;
+  font-weight:bold;
+}
+
+.history-manage-next{
+  color:#537163;
+  font-size:14px;
+}
+
+.history-manage-balls{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+  margin-bottom:12px;
+}
+
+.history-ball{
+  min-width:40px;
+  width:44px;
+  height:44px;
+  padding:0;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-size:15px;
+  font-weight:900;
+  box-shadow:0 6px 14px rgba(0,0,0,.14);
+}
+
+.history-entry{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+}
+
+.history-ball-text{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  color:#355446;
+  line-height:1.1;
+}
+
+.history-ball-zodiac{
+  font-size:12px;
+  font-weight:bold;
+}
+
+.history-ball-element{
+  font-size:11px;
+  color:#5f7d69;
+}
+
+.history-ball.red{background:linear-gradient(145deg,#ff5a5a,#b90f0f)}
+.history-ball.blue{background:linear-gradient(145deg,#4d98ff,#145fc8)}
+.history-ball.green{background:linear-gradient(145deg,#20d66f,#088b43)}
+
+.history-plus{
+  color:#118848;
+  font-size:26px;
+  font-weight:bold;
+}
+
+.history-actions{
+  display:flex;
+  gap:10px;
+}
+
+.history-action-btn{
+  width:auto;
+  margin:0;
+  padding:10px 16px;
+  font-size:14px;
+  border-radius:10px;
+}
+
+.history-action-btn.edit{
+  background:#2563eb;
+}
+
+.history-action-btn.edit:hover{
+  background:#1d4ed8;
+}
+
+.history-action-btn.delete{
+  background:#dc2626;
+}
+
+.history-action-btn.delete:hover{
+  background:#b91c1c;
+}
+
+.edit-banner{
+  display:none;
+  margin:0 0 14px;
+  padding:12px 14px;
+  border-radius:14px;
+  background:rgba(37,99,235,.16);
+  border:1px solid rgba(147,197,253,.4);
+  color:#dbeafe;
+}
+
+.edit-banner.is-open{
+  display:block;
+}
+
+.edit-banner-actions{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+}
+
+.edit-banner-btn{
+  width:auto;
+  margin:0;
+  padding:9px 14px;
+  font-size:14px;
+  border-radius:10px;
+}
+
+.edit-banner-btn.cancel{
+  background:#475569;
+}
+
+.edit-banner-btn.cancel:hover{
+  background:#334155;
+}
+
+@media(max-width:720px){
+  body{padding:14px}
+  .box{padding:18px}
+  .link-row{grid-template-columns:1fr}
+  .head{display:none}
+  .row{
+    grid-template-columns:70px 1fr 64px;
+    gap:8px;
+    padding:12px;
+    border:1px solid rgba(255,255,255,.14);
+    border-radius:14px;
+    background:rgba(255,255,255,.08);
+  }
+  .auto-note,
+  .color-output{
+    grid-column:1 / -1;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="box">
+  <h2>新港天天彩后台录入</h2>
+
+  <div class="link-row">
+    <a class="link-btn" href="gallery-admin.html">打开图库后台</a>
+    <a class="link-btn" href="WZZT.html">打开前台首页</a>
+    <button class="link-btn" type="button" onclick="openHistoryManager()">历史开奖管理</button>
+  </div>
+
+  <div class="top">
+    <input id="period" placeholder="期号，例如：2026001">
+    <input id="nextTime" placeholder="下期开奖时间，例如：今晚 21:30">
+  </div>
+
+  <div class="module">
+    <div class="module-title">倒计时模块</div>
+    <input id="nextDrawAt" type="datetime-local" placeholder="选择下期开奖倒计时截止时间">
+    <div class="hint">这里填写精确时间后，前台开奖区会自动显示红色开奖倒计时。</div>
+    <button class="module-btn" type="button" onclick="saveCountdownSettings()">单独保存倒计时</button>
+  </div>
+
+  <div class="hint">填写 01-49 的号码后，系统会自动匹配波色、五行和生肖。保存后首页会自动更新。</div>
+
+  <div class="edit-banner" id="editBanner">
+    <div id="editBannerText">正在编辑历史记录</div>
+    <div class="edit-banner-actions">
+      <button class="edit-banner-btn cancel" type="button" onclick="cancelHistoryEdit()">取消编辑</button>
+    </div>
+  </div>
+
+  <div class="head">
+    <span>位置</span>
+    <span>号码</span>
+    <span>预览</span>
+    <span>号码属性</span>
+    <span>颜色</span>
+  </div>
+  <div id="form"></div>
+
+  <button onclick="save()">保存并更新前台</button>
+  <div class="msg" id="msg"></div>
+</div>
+
+<div class="admin-modal" id="historyModal" aria-hidden="true">
+  <div class="admin-panel">
+    <div class="admin-panel-head">
+      <h3>历史开奖管理</h3>
+      <button class="admin-close" id="historyClose" type="button" aria-label="关闭">×</button>
+    </div>
+    <div class="history-manage-list" id="historyManageList"></div>
+  </div>
+</div>
+
+<script>
+const form = document.getElementById("form");
+const periodInput = document.getElementById("period");
+const nextTimeInput = document.getElementById("nextTime");
+const nextDrawAtInput = document.getElementById("nextDrawAt");
+const message = document.getElementById("msg");
+const editBanner = document.getElementById("editBanner");
+const editBannerText = document.getElementById("editBannerText");
+const historyModal = document.getElementById("historyModal");
+const historyClose = document.getElementById("historyClose");
+const historyManageList = document.getElementById("historyManageList");
+const STORAGE_KEY = "lhc";
+const HISTORY_KEY = "lhc_history";
+const COUNTDOWN_KEY = "lhc_countdown";
+let editingHistoryIndex = null;
+
+const colorText = {
+  red: "红色",
+  blue: "蓝色",
+  green: "绿色"
+};
+
+const numberMap = {
+  "01": { color:"red", element:"水", zodiac:"马" },
+  "02": { color:"red", element:"火", zodiac:"蛇" },
+  "03": { color:"blue", element:"火", zodiac:"龙" },
+  "04": { color:"blue", element:"金", zodiac:"兔" },
+  "05": { color:"green", element:"金", zodiac:"虎" },
+  "06": { color:"green", element:"土", zodiac:"牛" },
+  "07": { color:"red", element:"土", zodiac:"鼠" },
+  "08": { color:"red", element:"木", zodiac:"猪" },
+  "09": { color:"blue", element:"木", zodiac:"狗" },
+  "10": { color:"blue", element:"火", zodiac:"鸡" },
+  "11": { color:"green", element:"火", zodiac:"猴" },
+  "12": { color:"red", element:"金", zodiac:"羊" },
+  "13": { color:"red", element:"金", zodiac:"马" },
+  "14": { color:"blue", element:"水", zodiac:"蛇" },
+  "15": { color:"blue", element:"水", zodiac:"龙" },
+  "16": { color:"green", element:"木", zodiac:"兔" },
+  "17": { color:"green", element:"木", zodiac:"虎" },
+  "18": { color:"red", element:"火", zodiac:"牛" },
+  "19": { color:"red", element:"火", zodiac:"鼠" },
+  "20": { color:"blue", element:"土", zodiac:"猪" },
+  "21": { color:"green", element:"土", zodiac:"狗" },
+  "22": { color:"green", element:"水", zodiac:"鸡" },
+  "23": { color:"red", element:"水", zodiac:"猴" },
+  "24": { color:"red", element:"木", zodiac:"羊" },
+  "25": { color:"blue", element:"木", zodiac:"马" },
+  "26": { color:"blue", element:"金", zodiac:"蛇" },
+  "27": { color:"green", element:"金", zodiac:"龙" },
+  "28": { color:"green", element:"土", zodiac:"兔" },
+  "29": { color:"red", element:"土", zodiac:"虎" },
+  "30": { color:"red", element:"水", zodiac:"牛" },
+  "31": { color:"blue", element:"水", zodiac:"鼠" },
+  "32": { color:"green", element:"火", zodiac:"猪" },
+  "33": { color:"green", element:"火", zodiac:"狗" },
+  "34": { color:"red", element:"金", zodiac:"鸡" },
+  "35": { color:"red", element:"金", zodiac:"猴" },
+  "36": { color:"blue", element:"土", zodiac:"羊" },
+  "37": { color:"blue", element:"土", zodiac:"马" },
+  "38": { color:"green", element:"木", zodiac:"蛇" },
+  "39": { color:"green", element:"木", zodiac:"龙" },
+  "40": { color:"red", element:"火", zodiac:"兔" },
+  "41": { color:"blue", element:"火", zodiac:"虎" },
+  "42": { color:"blue", element:"金", zodiac:"牛" },
+  "43": { color:"green", element:"金", zodiac:"鼠" },
+  "44": { color:"green", element:"水", zodiac:"猪" },
+  "45": { color:"red", element:"水", zodiac:"狗" },
+  "46": { color:"red", element:"木", zodiac:"鸡" },
+  "47": { color:"blue", element:"木", zodiac:"猴" },
+  "48": { color:"blue", element:"火", zodiac:"羊" },
+  "49": { color:"green", element:"火", zodiac:"马" }
+};
+
+for(let i = 1; i <= 7; i++){
+  form.innerHTML += `
+    <div class="row" id="row${i}">
+      <b>${i === 7 ? "特码" : "正码" + i}</b>
+      <input class="num-input" id="num${i}" inputmode="numeric" maxlength="2" placeholder="01-49">
+      <div class="preview-ball" id="preview${i}">--</div>
+      <input class="auto-note" id="note${i}" readonly placeholder="自动显示五行 / 生肖">
+      <input class="color-output" id="colorText${i}" readonly placeholder="自动颜色">
+      <input id="color${i}" type="hidden">
+    </div>
+  `;
+}
+
+for(let i = 1; i <= 7; i++){
+  const input = document.getElementById("num" + i);
+  input.addEventListener("input", () => syncRow(i));
+  input.addEventListener("blur", () => syncRow(i, true));
+}
+
+function cleanNumber(value){
+  return String(value || "").replace(/\D/g, "").slice(0, 2);
+}
+
+function getNumberInfo(value){
+  const cleaned = cleanNumber(value);
+  if(!cleaned) return null;
+
+  const number = Number(cleaned);
+  if(number < 1 || number > 49) return null;
+
+  const key = String(number).padStart(2, "0");
+  return { key, ...numberMap[key] };
+}
+
+function noteText(info){
+  return `${info.element} / ${info.zodiac}`;
+}
+
+function parseDateTimeLocal(value){
+  const text = String(value || "").trim();
+  if(!text){
+    return null;
+  }
+
+  const match = text.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/);
+  if(!match){
+    return null;
+  }
+
+  const [, year, month, day, hour, minute, second = "0"] = match;
+  const timestamp = new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+    Number(second)
+  ).getTime();
+
+  return Number.isFinite(timestamp) && timestamp > 0 ? timestamp : null;
+}
+
+function loadJson(key, fallback){
+  const raw = localStorage.getItem(key);
+  if(!raw){
+    return fallback;
+  }
+
+  try{
+    const data = JSON.parse(raw);
+    return data ?? fallback;
+  }catch(error){
+    return fallback;
+  }
+}
+
+const SAFE_COLORS = new Set(["red", "blue", "green"]);
+
+function escapeHtml(value){
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function safeColor(value){
+  const color = String(value || "");
+  return SAFE_COLORS.has(color) ? color : "green";
+}
+
+function safeNumber(value){
+  const clean = String(value || "").replace(/\D/g, "").slice(0, 2);
+  const number = Number(clean);
+  if(number < 1 || number > 49){
+    return "--";
+  }
+  return String(number).padStart(2, "0");
+}
+
+function loadHistory(){
+  const list = loadJson(HISTORY_KEY, []);
+  return Array.isArray(list) ? list : [];
+}
+
+function saveHistory(list){
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+}
+
+function pushHistory(entry){
+  if(!entry || !entry.period || !Array.isArray(entry.items) || !entry.items.length){
+    return;
+  }
+
+  const list = loadHistory();
+  const exists = list.some(item =>
+    String(item.period || "") === String(entry.period || "") &&
+    String(item.updateTime || "") === String(entry.updateTime || "")
+  );
+
+  if(exists){
+    return;
+  }
+
+  list.unshift(entry);
+  saveHistory(list.slice(0, 80));
+}
+
+function buildCountdownPayload(){
+  const raw = nextDrawAtInput.value || "";
+  const countdownTs = parseDateTimeLocal(raw);
+  return {
+    nextDrawAt: raw,
+    nextDrawAtTs: countdownTs || "",
+    updatedAt: Date.now()
+  };
+}
+
+function saveCountdownSettings(){
+  const data = buildCountdownPayload();
+  localStorage.setItem(COUNTDOWN_KEY, JSON.stringify(data));
+
+  const current = loadJson(STORAGE_KEY, null);
+  if(current){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      ...current,
+      nextDrawAt: data.nextDrawAt,
+      nextDrawAtTs: data.nextDrawAtTs
+    }));
+  }
+
+  message.innerText = "倒计时已单独保存，不会触发号码更新";
+}
+
+function buildHistoryBalls(items){
+  if(!Array.isArray(items)){
+    return "";
+  }
+
+  let html = "";
+  items.forEach((item, index) => {
+    const row = item || {};
+    const noteParts = row.note ? String(row.note).split("/").map(part => part.trim()) : [];
+    const element = escapeHtml(noteParts[0] || "--");
+    const zodiac = escapeHtml(noteParts[1] || "--");
+    const color = safeColor(row.color);
+    const num = safeNumber(row.num);
+    if(index === 6){
+      html += `<span class="history-plus">+</span>`;
+    }
+    html += `
+      <span class="history-entry">
+        <span class="history-ball ${color}">${num}</span>
+        <span class="history-ball-text">
+          <span class="history-ball-zodiac">${zodiac}</span>
+          <span class="history-ball-element">${element}</span>
+        </span>
+      </span>
+    `;
+  });
+  return html;
+}
+
+function renderHistoryManager(){
+  const list = loadHistory();
+  if(!list.length){
+    historyManageList.innerHTML = `<div class="history-manage-empty">暂时还没有历史开奖记录</div>`;
+    return;
+  }
+
+  historyManageList.innerHTML = list.map((entry, index) => {
+    const period = escapeHtml(entry?.period || "--");
+    const nextTime = escapeHtml(entry?.nextTime || "");
+    const items = Array.isArray(entry?.items) ? entry.items : [];
+    return `
+    <div class="history-manage-item">
+      <div class="history-manage-meta">
+        <div>
+          <div class="history-manage-period">第 ${period} 期</div>
+          <div class="history-manage-next">${nextTime ? `下期开奖时间：${nextTime}` : "未填写下期开奖时间"}</div>
+        </div>
+      </div>
+      <div class="history-manage-balls">${buildHistoryBalls(items)}</div>
+      <div class="history-actions">
+        <button class="history-action-btn edit" type="button" onclick="editHistoryRecord(${index})">修改</button>
+        <button class="history-action-btn delete" type="button" onclick="deleteHistoryRecord(${index})">删除</button>
+      </div>
+    </div>
+  `;
+  }).join("");
+}
+
+function openHistoryManager(){
+  renderHistoryManager();
+  historyModal.classList.add("is-open");
+  historyModal.setAttribute("aria-hidden", "false");
+}
+
+function closeHistoryManager(){
+  historyModal.classList.remove("is-open");
+  historyModal.setAttribute("aria-hidden", "true");
+}
+
+function applyEntryToForm(entry){
+  periodInput.value = entry.period || "";
+  nextTimeInput.value = entry.nextTime || "";
+
+  for(let i = 1; i <= 7; i++){
+    const input = document.getElementById("num" + i);
+    input.value = "";
+    syncRow(i, true);
+  }
+
+  if(Array.isArray(entry.items)){
+    entry.items.forEach((item, index) => {
+      const i = index + 1;
+      if(i > 7) return;
+      document.getElementById("num" + i).value = item.num || "";
+      syncRow(i, true);
+    });
+  }
+}
+
+function editHistoryRecord(index){
+  const list = loadHistory();
+  const entry = list[index];
+  if(!entry){
+    return;
+  }
+
+  editingHistoryIndex = index;
+  applyEntryToForm(entry);
+  editBannerText.innerText = `正在编辑历史记录：第 ${entry.period || "--"} 期`;
+  editBanner.classList.add("is-open");
+  message.innerText = "已载入历史记录，保存后只会更新该条历史，不会影响前台当前开奖";
+  closeHistoryManager();
+  periodInput.focus();
+}
+
+function cancelHistoryEdit(){
+  editingHistoryIndex = null;
+  editBanner.classList.remove("is-open");
+  editBannerText.innerText = "正在编辑历史记录";
+  loadOld();
+  message.innerText = "已取消历史记录编辑";
+}
+
+function deleteHistoryRecord(index){
+  const list = loadHistory();
+  const entry = list[index];
+  if(!entry){
+    return;
+  }
+
+  const confirmed = confirm(`确定删除第 ${entry.period || "--"} 期历史记录吗？`);
+  if(!confirmed){
+    return;
+  }
+
+  list.splice(index, 1);
+  saveHistory(list);
+
+  if(editingHistoryIndex === index){
+    cancelHistoryEdit();
+  }else if(editingHistoryIndex !== null && editingHistoryIndex > index){
+    editingHistoryIndex -= 1;
+  }
+
+  renderHistoryManager();
+  message.innerText = `已删除第 ${entry.period || "--"} 期历史记录`;
+}
+
+function syncRow(i, format = false){
+  const row = document.getElementById("row" + i);
+  const numInput = document.getElementById("num" + i);
+  const noteInput = document.getElementById("note" + i);
+  const colorInput = document.getElementById("color" + i);
+  const colorOutput = document.getElementById("colorText" + i);
+  const preview = document.getElementById("preview" + i);
+
+  const cleaned = cleanNumber(numInput.value);
+  if(numInput.value !== cleaned){
+    numInput.value = cleaned;
+  }
+
+  const info = getNumberInfo(cleaned);
+
+  preview.className = "preview-ball";
+  row.classList.remove("invalid");
+
+  if(!info){
+    noteInput.value = "";
+    colorInput.value = "";
+    colorOutput.value = "";
+    preview.innerText = "--";
+
+    if(cleaned){
+      row.classList.add("invalid");
+      message.innerText = "号码只能填写 01-49";
+    }else{
+      message.innerText = "";
+    }
+    return null;
+  }
+
+  if(format){
+    numInput.value = info.key;
+  }
+
+  noteInput.value = noteText(info);
+  colorInput.value = info.color;
+  colorOutput.value = colorText[info.color];
+  preview.classList.add(info.color);
+  preview.innerText = info.key;
+  message.innerText = "";
+
+  return info;
+}
+
+function save(){
+  const items = [];
+
+  for(let i = 1; i <= 7; i++){
+    const info = syncRow(i, true);
+    const numInput = document.getElementById("num" + i);
+
+    if(!info){
+      message.innerText = `请正确填写${i === 7 ? "特码" : "正码" + i}，号码范围是 01-49`;
+      numInput.focus();
+      return;
+    }
+
+    items.push({
+      num: info.key,
+      note: noteText(info),
+      color: info.color
+    });
+  }
+
+  const periodValue = periodInput.value.trim();
+  if(!periodValue){
+    message.innerText = "请填写期号";
+    periodInput.focus();
+    return;
+  }
+
+  const data = {
+    period: periodValue,
+    nextTime: nextTimeInput.value.trim(),
+    items,
+    updateTime: Date.now()
+  };
+
+  if(editingHistoryIndex !== null){
+    const list = loadHistory();
+    const existing = list[editingHistoryIndex];
+    if(!existing){
+      message.innerText = "历史记录不存在，请重新打开管理窗口";
+      editingHistoryIndex = null;
+      editBanner.classList.remove("is-open");
+      return;
+    }
+
+    list[editingHistoryIndex] = {
+      ...existing,
+      period: data.period,
+      nextTime: data.nextTime,
+      items: data.items
+    };
+    saveHistory(list);
+    editBanner.classList.remove("is-open");
+    editingHistoryIndex = null;
+    renderHistoryManager();
+    message.innerText = `历史记录已修改：第 ${data.period} 期`;
+    return;
+  }
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  pushHistory(data);
+  message.innerText = "保存成功，前台将在几秒内自动更新";
+}
+
+function loadOld(){
+  const data = loadJson(STORAGE_KEY, null);
+  const countdown = loadJson(COUNTDOWN_KEY, null);
+
+  if(data){
+    periodInput.value = data.period || "";
+    nextTimeInput.value = data.nextTime || "";
+  }
+
+  if(countdown){
+    nextDrawAtInput.value = countdown.nextDrawAt || "";
+  }else if(data){
+    nextDrawAtInput.value = data.nextDrawAt || "";
+  }
+
+  if(data && Array.isArray(data.items)){
+    data.items.forEach((item, index) => {
+      const i = index + 1;
+      if(i > 7) return;
+      document.getElementById("num" + i).value = item.num || "";
+      syncRow(i, true);
+    });
+  }
+}
+
+loadOld();
+
+historyClose.addEventListener("click", closeHistoryManager);
+historyModal.addEventListener("click", event => {
+  if(event.target === historyModal){
+    closeHistoryManager();
+  }
+});
+document.addEventListener("keydown", event => {
+  if(event.key === "Escape" && historyModal.classList.contains("is-open")){
+    closeHistoryManager();
+  }
+});
+</script>
+
+</body>
+</html>

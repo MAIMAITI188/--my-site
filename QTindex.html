@@ -1,0 +1,852 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>新港天天彩</title>
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  height:100vh;
+  min-height:0;
+  overflow:hidden;
+  color:#064e3b;
+  font-family:Arial,"Microsoft YaHei",sans-serif;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:transparent;
+}
+
+.box{
+  width:min(1200px,96vw);
+  padding:30px 28px 64px;
+  border-radius:36px;
+  border:1px solid rgba(16,196,99,.38);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.48);
+  text-align:center;
+  position:relative;
+}
+
+.title-row{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:14px;
+  padding-right:150px;
+}
+
+.title-logo{
+  width:52px;
+  height:52px;
+  flex:0 0 52px;
+  display:block;
+  object-fit:contain;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 6px 16px rgba(0,0,0,.18);
+}
+
+.history-btn{
+  position:absolute;
+  top:24px;
+  right:26px;
+  border:0;
+  padding:10px 16px;
+  border-radius:999px;
+  background:rgba(255,255,255,.92);
+  color:#0d8b46;
+  font-size:15px;
+  font-weight:normal;
+  cursor:pointer;
+  box-shadow:0 8px 22px rgba(0,0,0,.12);
+}
+
+h1{
+  margin:0;
+  font-size:36px;
+  text-align:left;
+}
+
+.meta-row{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:16px;
+  margin:18px 0 30px;
+}
+
+.period-wrap{
+  display:flex;
+  align-items:center;
+  gap:18px;
+  min-width:0;
+}
+
+.period{
+  margin:0;
+  font-size:28px;
+  font-weight:normal;
+  white-space:nowrap;
+}
+
+.countdown{
+  font-size:24px;
+  font-weight:normal;
+  color:#d81919;
+  white-space:nowrap;
+  text-shadow:0 1px 8px rgba(216,25,25,.16);
+}
+
+.countdown.is-muted{
+  color:#b54d4d;
+}
+
+.countdown.is-alert{
+  animation:countdownPulse 1s ease-in-out infinite;
+}
+
+@keyframes countdownPulse{
+  0%,100%{
+    transform:scale(1);
+    opacity:1;
+  }
+  50%{
+    transform:scale(1.05);
+    opacity:.78;
+  }
+}
+
+.balls{
+  display:flex;
+  justify-content:center;
+  gap:14px;
+}
+
+.item{width:110px;text-align:center}
+
+.ball{
+  width:90px;
+  height:90px;
+  margin:auto;
+  border-radius:50%;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:
+    inset 0 5px 10px rgba(255,255,255,.35),
+    inset 0 -8px 14px rgba(0,0,0,.25),
+    0 10px 25px rgba(0,0,0,.55);
+}
+
+.ball::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  background:var(--bg);
+}
+
+.ball::after{
+  content:"";
+  position:absolute;
+  width:70%;
+  height:70%;
+  left:15%;
+  top:13%;
+  border-radius:50%;
+  background:#fff;
+}
+
+.shine{
+  position:absolute;
+  right:8px;
+  bottom:11px;
+  width:22px;
+  height:12px;
+  background:#fff;
+  border-radius:50%;
+  transform:rotate(-25deg);
+}
+
+.ball span{
+  position:relative;
+  z-index:2;
+  color:#111;
+  font-size:36px;
+  font-weight:900;
+  font-family:"Arial Black","Impact","Microsoft YaHei",sans-serif;
+}
+
+.green{--bg:linear-gradient(145deg,#20d842,#0a9b27)}
+.red{--bg:linear-gradient(145deg,#ff4545,#b60000)}
+.blue{--bg:linear-gradient(145deg,#48a6ff,#0052c8)}
+
+.rolling{animation:rolling .15s linear infinite}
+.done{animation:pop .5s ease both}
+
+@keyframes rolling{
+  50%{transform:scale(1.06)}
+}
+
+@keyframes pop{
+  0%{transform:scale(.9)}
+  60%{transform:scale(1.1)}
+  100%{transform:scale(1)}
+}
+
+.note{
+  margin-top:12px;
+  font-size:24px;
+  line-height:1.15;
+  min-height:34px;
+  font-weight:normal;
+}
+
+.plus{
+  width:30px;
+  line-height:90px;
+  font-size:40px;
+}
+
+.next-time{
+  position:absolute;
+  left:38px;
+  bottom:18px;
+  font-size:24px;
+  font-weight:normal;
+}
+
+.history-modal{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(4,22,13,.42);
+  z-index:9999;
+}
+
+.history-modal.is-open{
+  display:flex;
+}
+
+.history-panel{
+  width:min(920px,100%);
+  max-height:min(86vh,780px);
+  overflow:auto;
+  border-radius:24px;
+  background:#f7fcf8;
+  box-shadow:0 18px 56px rgba(0,0,0,.22);
+  color:#104229;
+}
+
+.history-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:18px 20px 12px;
+  position:sticky;
+  top:0;
+  background:#f7fcf8;
+}
+
+.history-head h3{
+  margin:0;
+  font-size:24px;
+}
+
+.history-close{
+  border:0;
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  background:#ddf4e4;
+  color:#0b7e3f;
+  font-size:24px;
+  line-height:1;
+  cursor:pointer;
+}
+
+.history-list{
+  padding:0 20px 20px;
+}
+
+.history-empty{
+  padding:20px 0 10px;
+  color:#6c8576;
+  font-size:16px;
+}
+
+.history-item{
+  padding:16px 0;
+  border-top:1px solid #ddebe0;
+  text-align:left;
+}
+
+.history-item:first-child{
+  border-top:0;
+}
+
+.history-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+  font-size:22px;
+  font-weight:bold;
+}
+
+.history-badge{
+  padding:4px 10px;
+  border-radius:999px;
+  background:#0ea84f;
+  color:#fff;
+  font-size:13px;
+}
+
+.history-meta{
+  margin-bottom:10px;
+  color:#5b7767;
+  font-size:15px;
+}
+
+.history-balls{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+}
+
+.history-num{
+  min-width:42px;
+  width:44px;
+  height:44px;
+  padding:0;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-size:16px;
+  font-weight:900;
+  box-shadow:0 6px 14px rgba(0,0,0,.14);
+}
+
+.history-entry{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+}
+
+.history-num-text{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  color:#355446;
+  line-height:1.1;
+}
+
+.history-num-zodiac{
+  font-size:12px;
+  font-weight:bold;
+}
+
+.history-num-element{
+  font-size:11px;
+  color:#5f7d69;
+}
+
+.history-num.red{background:linear-gradient(145deg,#ff5a5a,#b90f0f)}
+.history-num.blue{background:linear-gradient(145deg,#4d98ff,#145fc8)}
+.history-num.green{background:linear-gradient(145deg,#20d66f,#088b43)}
+
+.history-plus{
+  font-size:28px;
+  font-weight:bold;
+  color:#0c8e47;
+  line-height:1;
+  padding:0 2px;
+}
+
+@media(max-width:768px){
+  body{
+    align-items:flex-start;
+    padding-top:8px;
+  }
+
+  .box{
+    width:960px;
+    max-width:none;
+    margin-top:-8px;
+    padding:28px 28px 68px;
+    transform:scale(.63);
+    transform-origin:top center;
+  }
+
+  .history-btn{
+    top:20px;
+    right:20px;
+    padding:10px 14px;
+    font-size:15px;
+  }
+  .title-row{
+    gap:10px;
+    padding-right:146px;
+  }
+  .title-logo{
+    width:44px;
+    height:44px;
+    flex-basis:44px;
+  }
+  h1{font-size:34px}
+  .meta-row{margin:14px 0 22px}
+  .period-wrap{gap:16px}
+  .period{font-size:30px}
+  .countdown{font-size:24px}
+  .balls{gap:14px;overflow:visible}
+  .item{width:110px;flex:0 0 110px}
+  .ball{width:90px;height:90px}
+  .ball span{font-size:38px}
+  .plus{width:30px;line-height:90px;font-size:42px;flex:0 0 30px}
+  .note{margin-top:14px;font-size:26px;min-height:38px}
+  .next-time{font-size:26px}
+}
+
+@media(max-width:520px){
+  .box{transform:scale(.36)}
+}
+</style>
+</head>
+<body>
+
+<div class="box">
+  <button class="history-btn" id="historyBtn" type="button">查看历史开奖</button>
+  <div class="title-row">
+    <img class="title-logo" src="assets/hk-logo.png" alt="香港紫荆花标志">
+    <h1>新港天天彩</h1>
+  </div>
+  <div class="meta-row">
+    <div class="period-wrap">
+      <div class="period" id="periodText">暂无数据</div>
+      <div class="countdown is-muted" id="countdownText">倒计时 --:--:--</div>
+    </div>
+  </div>
+  <div class="balls" id="balls"></div>
+  <div class="next-time" id="nextTimeText"></div>
+</div>
+
+<div class="history-modal" id="historyModal" aria-hidden="true">
+  <div class="history-panel">
+    <div class="history-head">
+      <h3>历史开奖</h3>
+      <button class="history-close" id="historyClose" type="button" aria-label="关闭">×</button>
+    </div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = "lhc";
+const HISTORY_KEY = "lhc_history";
+const COUNTDOWN_KEY = "lhc_countdown";
+const periodText = document.getElementById("periodText");
+const nextTimeText = document.getElementById("nextTimeText");
+const countdownText = document.getElementById("countdownText");
+const balls = document.getElementById("balls");
+const historyBtn = document.getElementById("historyBtn");
+const historyModal = document.getElementById("historyModal");
+const historyClose = document.getElementById("historyClose");
+const historyList = document.getElementById("historyList");
+
+let index = 0;
+let timer = null;
+let lastUpdateTime = "";
+let isPlaying = false;
+let currentData = null;
+
+function loadJson(key, fallback){
+  const raw = localStorage.getItem(key);
+  if(!raw){
+    return fallback;
+  }
+
+  try{
+    const data = JSON.parse(raw);
+    return data ?? fallback;
+  }catch(error){
+    return fallback;
+  }
+}
+
+const SAFE_COLORS = new Set(["red", "blue", "green"]);
+const SAFE_EXTRA_CLASSES = new Set(["rolling", "done"]);
+
+function escapeHtml(value){
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function safeColor(value){
+  const color = String(value || "");
+  return SAFE_COLORS.has(color) ? color : "green";
+}
+
+function safeExtraClass(value){
+  const extra = String(value || "");
+  return SAFE_EXTRA_CLASSES.has(extra) ? extra : "";
+}
+
+function safeNumber(value, fallback = "--"){
+  const clean = String(value || "").replace(/\D/g, "").slice(0, 2);
+  const number = Number(clean);
+  if(number < 1 || number > 49){
+    return fallback;
+  }
+  return String(number).padStart(2, "0");
+}
+
+function safeNote(value){
+  const text = String(value || "").trim();
+  return text ? escapeHtml(text) : "&nbsp;";
+}
+
+function formatCountdown(ms){
+  if(ms <= 0){
+    return "00:00:00";
+  }
+
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
+  const seconds = String(totalSeconds % 60).padStart(2, "0");
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+function parseDateTimeLocal(value){
+  const text = String(value || "").trim();
+  if(!text){
+    return NaN;
+  }
+
+  const match = text.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/);
+  if(!match){
+    return NaN;
+  }
+
+  const [, year, month, day, hour, minute, second = "0"] = match;
+  return new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+    Number(second)
+  ).getTime();
+}
+
+function getCountdownTimestamp(data){
+  if(data && data.nextDrawAtTs !== "" && data.nextDrawAtTs !== null && typeof data.nextDrawAtTs !== "undefined"){
+    const ts = Number(data.nextDrawAtTs);
+    if(Number.isFinite(ts) && ts > 0){
+      return ts;
+    }
+  }
+
+  const raw = data && data.nextDrawAt ? String(data.nextDrawAt).trim() : "";
+  const parsed = parseDateTimeLocal(raw);
+  if(Number.isFinite(parsed) && parsed > 0){
+    return parsed;
+  }
+
+  return NaN;
+}
+
+function updateCountdown(){
+  const countdownData = loadJson(COUNTDOWN_KEY, null);
+  const countdownTimestamp = getCountdownTimestamp(countdownData);
+  const currentTimestamp = getCountdownTimestamp(currentData);
+  const timestamp = Number.isFinite(countdownTimestamp) ? countdownTimestamp : currentTimestamp;
+  if(!Number.isFinite(timestamp)){
+    countdownText.innerText = "倒计时 --:--:--";
+    countdownText.classList.add("is-muted");
+    countdownText.classList.remove("is-alert");
+    return;
+  }
+
+  const diff = timestamp - Date.now();
+  if(diff <= 0){
+    countdownText.innerText = "正在开奖";
+    countdownText.classList.remove("is-muted");
+    countdownText.classList.add("is-alert");
+    return;
+  }
+
+  countdownText.innerText = "开奖倒计时 " + formatCountdown(diff);
+  countdownText.classList.remove("is-muted");
+  countdownText.classList.toggle("is-alert", diff <= 5 * 60 * 1000);
+}
+
+function loadHistory(){
+  const list = loadJson(HISTORY_KEY, []);
+  return Array.isArray(list) ? list : [];
+}
+
+function buildHistoryRows(items){
+  if(!Array.isArray(items)){
+    return "";
+  }
+
+  let html = "";
+  items.forEach((item, index) => {
+    const row = item || {};
+    const noteParts = row.note ? String(row.note).split("/").map(part => part.trim()) : [];
+    const element = escapeHtml(noteParts[0] || "--");
+    const zodiac = escapeHtml(noteParts[1] || "--");
+    const color = safeColor(row.color);
+    const num = safeNumber(row.num);
+    if(index === 6){
+      html += `<span class="history-plus">+</span>`;
+    }
+    html += `
+      <span class="history-entry">
+        <span class="history-num ${color}">${num}</span>
+        <span class="history-num-text">
+          <span class="history-num-zodiac">${zodiac}</span>
+          <span class="history-num-element">${element}</span>
+        </span>
+      </span>
+    `;
+  });
+  return html;
+}
+
+function formatUpdateTime(value){
+  const time = new Date(Number(value));
+  if(Number.isNaN(time.getTime())){
+    return "";
+  }
+
+  const year = time.getFullYear();
+  const month = String(time.getMonth() + 1).padStart(2, "0");
+  const date = String(time.getDate()).padStart(2, "0");
+  const hour = String(time.getHours()).padStart(2, "0");
+  const minute = String(time.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${date} ${hour}:${minute}`;
+}
+
+function renderHistory(){
+  const history = loadHistory();
+  const merged = [];
+
+  if(currentData && Array.isArray(currentData.items) && currentData.items.length){
+    merged.push({ ...currentData, _isCurrent:true });
+  }
+
+  history.forEach(entry => {
+    const duplicated = merged.some(item => String(item.period || "") === String(entry.period || "") && String(item.updateTime || "") === String(entry.updateTime || ""));
+    if(!duplicated){
+      merged.push(entry);
+    }
+  });
+
+  if(!merged.length){
+    historyList.innerHTML = `<div class="history-empty">暂时还没有历史开奖数据</div>`;
+    return;
+  }
+
+  historyList.innerHTML = merged.map(entry => {
+    const period = escapeHtml(entry?.period || "--");
+    const nextTime = escapeHtml(entry?.nextTime || "");
+    const items = Array.isArray(entry?.items) ? entry.items : [];
+    return `
+    <div class="history-item">
+      <div class="history-title">
+        <span>第 ${period} 期</span>
+        ${entry._isCurrent ? '<span class="history-badge">当前</span>' : ""}
+      </div>
+      <div class="history-meta">
+        ${nextTime ? `下期开奖时间：${nextTime}` : ""}
+      </div>
+      <div class="history-balls">${buildHistoryRows(items)}</div>
+    </div>
+  `;
+  }).join("");
+}
+
+function openHistory(){
+  renderHistory();
+  historyModal.classList.add("is-open");
+  historyModal.setAttribute("aria-hidden", "false");
+}
+
+function closeHistory(){
+  historyModal.classList.remove("is-open");
+  historyModal.setAttribute("aria-hidden", "true");
+}
+
+function ballHtml(color, num, extra = ""){
+  const displayNum = num ? safeNumber(num, "") : "";
+  return `<div class="ball ${safeColor(color)} ${safeExtraClass(extra)}"><span>${displayNum}</span><i class="shine"></i></div>`;
+}
+
+function render(data, current, rollingNum, finish = -1){
+  let html = "";
+
+  data.items.forEach((item, i) => {
+    const row = item || {};
+    if(i === 6) html += `<div class="plus">+</div>`;
+
+    if(i < current){
+      html += `<div class="item">${ballHtml(row.color, row.num)}<div class="note">${safeNote(row.note)}</div></div>`;
+      return;
+    }
+
+    if(i === current){
+      if(finish !== i){
+        html += `<div class="item">${ballHtml("green", rollingNum, "rolling")}<div class="note">&nbsp;</div></div>`;
+      }else{
+        html += `<div class="item">${ballHtml(row.color, row.num, "done")}<div class="note">${safeNote(row.note)}</div></div>`;
+      }
+      return;
+    }
+
+    html += `<div class="item">${ballHtml("green", "")}<div class="note">&nbsp;</div></div>`;
+  });
+
+  balls.innerHTML = html;
+}
+
+function renderStatic(data){
+  let html = "";
+  data.items.forEach((item, i) => {
+    const row = item || {};
+    if(i === 6) html += `<div class="plus">+</div>`;
+    html += `<div class="item">${ballHtml(row.color, row.num)}<div class="note">${safeNote(row.note)}</div></div>`;
+  });
+  balls.innerHTML = html;
+}
+
+function setHeader(data){
+  periodText.innerText = "第" + (data.period || "--") + " 期";
+  nextTimeText.innerText = data.nextTime ? "下期开奖时间：" + data.nextTime : "";
+  currentData = data;
+  updateCountdown();
+}
+
+function play(data){
+  isPlaying = true;
+  setHeader(data);
+  index = 0;
+
+  function next(){
+    if(index >= data.items.length){
+      renderStatic(data);
+      isPlaying = false;
+      return;
+    }
+
+    let roll = 4000;
+    let pause = 2000;
+
+    if(index >= 3 && index <= 5){
+      roll = 5000;
+      pause = 3000;
+    }
+
+    if(index === 6){
+      roll = 8000;
+      pause = 3000;
+    }
+
+    timer = setInterval(() => {
+      const n = Math.floor(Math.random() * 49) + 1;
+      render(data, index, String(n).padStart(2, "0"));
+    }, 80);
+
+    setTimeout(() => {
+      clearInterval(timer);
+      const row = data.items[index] || {};
+      render(data, index, row.num, index);
+
+      setTimeout(() => {
+        index++;
+        next();
+      }, pause);
+    }, roll);
+  }
+
+  next();
+}
+
+function load(){
+  const data = loadJson(STORAGE_KEY, null);
+  if(!data){
+    periodText.innerText = "暂无数据";
+    nextTimeText.innerText = "";
+    balls.innerHTML = "";
+    currentData = null;
+    updateCountdown();
+    return;
+  }
+
+  if(!Array.isArray(data.items) || !data.items.length){
+    setHeader(data);
+    balls.innerHTML = "";
+    return;
+  }
+
+  const now = String(data.updateTime || "");
+  setHeader(data);
+
+  if(!lastUpdateTime){
+    lastUpdateTime = now;
+    renderStatic(data);
+    return;
+  }
+
+  if(now === lastUpdateTime){
+    if(!isPlaying){
+      renderStatic(data);
+    }
+    return;
+  }
+
+  lastUpdateTime = now;
+  play(data);
+}
+
+load();
+updateCountdown();
+setInterval(load, 5000);
+setInterval(updateCountdown, 1000);
+
+historyBtn.addEventListener("click", openHistory);
+historyClose.addEventListener("click", closeHistory);
+historyModal.addEventListener("click", event => {
+  if(event.target === historyModal){
+    closeHistory();
+  }
+});
+document.addEventListener("keydown", event => {
+  if(event.key === "Escape" && historyModal.classList.contains("is-open")){
+    closeHistory();
+  }
+});
+</script>
+
+</body>
+</html>

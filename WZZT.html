@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>新港天天彩</title>
+<style>
+*{box-sizing:border-box}
+
+:root{
+  --site-width:640px;
+  --site-gap:18px;
+  --brand:#10c463;
+  --brand-dark:#0d9d4f;
+  --bg:#eef1f5;
+  --muted:#6b7f72;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  font-family:Arial,"Microsoft YaHei",sans-serif;
+  color:#1f2d24;
+  -webkit-text-size-adjust:100%;
+}
+
+.page{
+  max-width:var(--site-width);
+  margin:0 auto;
+  min-height:100vh;
+}
+
+.header{
+  padding:16px 18px;
+  background:linear-gradient(135deg,#18d26f,#0ea84f);
+  color:#fff;
+}
+
+.header-inner{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:14px;
+}
+
+.header-logo{
+  width:52px;
+  height:52px;
+  flex:0 0 52px;
+  display:block;
+  object-fit:contain;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 6px 16px rgba(0,0,0,.18);
+}
+
+.header-title{
+  font-size:26px;
+  font-weight:bold;
+  line-height:1.1;
+  letter-spacing:1px;
+  text-align:left;
+}
+
+.api-box{
+  margin:var(--site-gap);
+  height:250px;
+  border:1px solid rgba(16,196,99,.28);
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 4px 14px rgba(16,185,129,.1);
+}
+
+.api-frame{
+  width:100%;
+  height:100%;
+  border:0;
+  display:block;
+  background:transparent;
+}
+
+.tool-box{
+  padding:0 var(--site-gap) 18px;
+}
+
+.tool-btn{
+  width:100%;
+  border:0;
+  padding:15px 0;
+  border-radius:10px;
+  background:var(--brand);
+  color:#fff;
+  font-size:19px;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 3px 10px rgba(0,0,0,.12);
+}
+
+.section-title{
+  margin:0 var(--site-gap) 14px;
+  padding:12px;
+  background:#fff;
+  border-left:6px solid var(--brand);
+  font-size:20px;
+  font-weight:bold;
+  border-radius:6px;
+  box-shadow:0 2px 6px rgba(0,0,0,.05);
+}
+
+.gallery{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
+  padding:0 var(--site-gap) 26px;
+}
+
+.gallery-card{
+  display:block;
+  width:100%;
+  background:#fff;
+  border-radius:12px;
+  overflow:hidden;
+  text-decoration:none;
+  color:inherit;
+  box-shadow:0 4px 12px rgba(0,0,0,.12);
+  transition:.2s;
+}
+
+.gallery-card:hover{
+  transform:translateY(-4px);
+}
+
+.gallery-media{
+  background:#e5e7eb;
+  line-height:0;
+}
+
+.gallery-image{
+  width:100%;
+  height:auto;
+  display:block;
+  background:#e5e7eb;
+  cursor:zoom-in;
+}
+
+.gallery-placeholder{
+  min-height:120px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:28px 18px;
+  background:linear-gradient(135deg,#edf8f0,#dff2e4);
+  color:#78907d;
+  font-size:14px;
+  line-height:1.6;
+}
+
+.empty-box{
+  grid-column:1 / -1;
+  padding:26px 18px;
+  border:1px dashed #caddce;
+  border-radius:14px;
+  background:#fff;
+  text-align:center;
+  color:var(--muted);
+  line-height:1.7;
+}
+
+.pick-page{
+  display:none;
+  max-width:var(--site-width);
+  margin:0 auto;
+  min-height:100vh;
+  background:#fff;
+}
+
+.pick-header{
+  height:54px;
+  background:var(--brand);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  font-size:20px;
+  font-weight:bold;
+}
+
+.back-btn{
+  position:absolute;
+  left:12px;
+  top:50%;
+  transform:translateY(-50%);
+  border:0;
+  background:rgba(255,255,255,.2);
+  color:#fff;
+  font-size:16px;
+  padding:7px 12px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.pick-frame{
+  width:100%;
+  height:calc(100vh - 54px);
+  border:0;
+  display:block;
+  background:#fff;
+}
+
+.lightbox{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:rgba(10,16,12,.82);
+  z-index:9999;
+  cursor:zoom-out;
+}
+
+.lightbox.is-open{
+  display:flex;
+}
+
+.lightbox-image{
+  max-width:min(92vw,900px);
+  max-height:88vh;
+  display:block;
+  border-radius:14px;
+  box-shadow:0 18px 48px rgba(0,0,0,.35);
+  background:#fff;
+}
+
+.lightbox-close{
+  position:absolute;
+  top:18px;
+  right:18px;
+  width:42px;
+  height:42px;
+  border:0;
+  border-radius:999px;
+  background:rgba(255,255,255,.16);
+  color:#fff;
+  font-size:26px;
+  line-height:1;
+  cursor:pointer;
+}
+
+@media(max-width:520px){
+  :root{--site-gap:12px}
+  .header{
+    padding:14px 12px;
+  }
+  .header-inner{
+    gap:10px;
+  }
+  .header-logo{
+    width:44px;
+    height:44px;
+    flex-basis:44px;
+  }
+  .header-title{
+    font-size:22px;
+  }
+  .api-box{height:190px}
+  .tool-box{padding:0 var(--site-gap) 14px}
+  .tool-btn{
+    padding:13px 0;
+    font-size:17px;
+    border-radius:9px;
+  }
+  .section-title{
+    margin:0 var(--site-gap) 12px;
+    padding:10px 12px;
+    font-size:18px;
+  }
+  .gallery{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+    padding:0 var(--site-gap) 18px;
+  }
+  .gallery-placeholder{
+    min-height:88px;
+    padding:18px 12px;
+    font-size:13px;
+  }
+  .lightbox{
+    padding:12px;
+  }
+  .lightbox-image{
+    max-width:calc(100vw - 24px);
+    max-height:calc(100vh - 24px);
+    border-radius:10px;
+  }
+  .lightbox-close{
+    top:10px;
+    right:10px;
+    width:38px;
+    height:38px;
+    font-size:22px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="page" id="mainPage">
+  <div class="header">
+    <div class="header-inner">
+      <img class="header-logo" src="assets/hk-logo.png" alt="香港紫荆花标志">
+      <div class="header-title">新港图库</div>
+    </div>
+  </div>
+
+  <div class="api-box">
+    <iframe class="api-frame" src="QTindex.html" title="开奖直播"></iframe>
+  </div>
+
+  <div class="tool-box">
+    <button class="tool-btn" onclick="openPickPage()">挑码助手</button>
+  </div>
+
+  <div class="section-title">新港图库</div>
+  <div class="gallery" id="gallery"></div>
+</div>
+
+<div class="pick-page" id="pickPage">
+  <div class="pick-header">
+    <button class="back-btn" onclick="backMainPage()">返回</button>
+    挑码助手
+  </div>
+  <iframe class="pick-frame" src="TMZS.html" title="挑码助手"></iframe>
+</div>
+
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close preview">X</button>
+  <img class="lightbox-image" id="lightboxImage" alt="">
+</div>
+
+<script>
+function openPickPage(){
+  document.getElementById("mainPage").style.display = "none";
+  document.getElementById("pickPage").style.display = "block";
+  window.scrollTo(0,0);
+}
+
+function backMainPage(){
+  document.getElementById("pickPage").style.display = "none";
+  document.getElementById("mainPage").style.display = "block";
+  window.scrollTo(0,0);
+}
+
+const gallery = document.getElementById("gallery");
+const lightbox = document.getElementById("lightbox");
+const lightboxImage = document.getElementById("lightboxImage");
+const lightboxClose = document.getElementById("lightboxClose");
+const SAFE_IMAGE_DATA_RE = /^data:image\/(?:png|jpe?g|webp|gif);base64,/i;
+
+function escapeHtml(value){
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function hasUnsafeUrlChars(value){
+  return /[\u0000-\u001f\u007f<>"']/.test(String(value || ""));
+}
+
+function normalizeImageSrc(value){
+  const clean = String(value || "").trim().replace(/\\/g, "/");
+  if(!clean || hasUnsafeUrlChars(clean)){
+    return "";
+  }
+
+  if(SAFE_IMAGE_DATA_RE.test(clean)){
+    return clean;
+  }
+
+  if(/^https?:\/\//i.test(clean)){
+    return clean;
+  }
+
+  if((clean.startsWith("images/gallery/") || clean.startsWith("./images/gallery/")) && !clean.includes("..")){
+    return /^[a-z0-9/_\-.%]+$/i.test(clean) ? clean : "";
+  }
+
+  return "";
+}
+
+function normalizeLinkHref(value){
+  const clean = String(value || "").trim();
+  if(!clean || hasUnsafeUrlChars(clean)){
+    return "";
+  }
+
+  if(/^https?:\/\//i.test(clean) || clean.startsWith("#") || clean.startsWith("./")){
+    return clean;
+  }
+
+  if(clean.startsWith("/") && !clean.startsWith("//")){
+    return clean;
+  }
+
+  return "";
+}
+
+function openLightbox(src, alt){
+  if(!src){
+    return;
+  }
+
+  lightboxImage.src = src;
+  lightboxImage.alt = alt || "";
+  lightbox.classList.add("is-open");
+  lightbox.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function closeLightbox(){
+  lightbox.classList.remove("is-open");
+  lightbox.setAttribute("aria-hidden", "true");
+  lightboxImage.removeAttribute("src");
+  lightboxImage.alt = "";
+  document.body.style.overflow = "";
+}
+
+function renderEmpty(message){
+  gallery.innerHTML = `<div class="empty-box">${message}</div>`;
+}
+
+function buildCard(item){
+  const title = escapeHtml(item.title || "未命名图片");
+  const imageSrc = normalizeImageSrc(item.image);
+  const linkHref = normalizeLinkHref(item.link);
+  const image = imageSrc ? `
+    <div class="gallery-media">
+      <img class="gallery-image" src="${escapeHtml(imageSrc)}" alt="${title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <div class="gallery-placeholder" style="display:none;">图片文件不存在<br>请检查图片路径</div>
+    </div>
+  ` : `
+    <div class="gallery-placeholder">这条数据还没有填写图片路径</div>
+  `;
+
+  if(linkHref){
+    return `<a class="gallery-card" href="${escapeHtml(linkHref)}" target="_blank" rel="noopener noreferrer">${image}</a>`;
+  }
+
+  return `<div class="gallery-card">${image}</div>`;
+}
+
+async function loadGallery(){
+  if(window.location.protocol === "file:"){
+    renderEmpty("你现在是直接双击打开页面。<br>这种方式通常读不出 <code>data/gallery.json</code>。<br>请用本地服务器预览，或者部署上线后再看。");
+    return;
+  }
+
+  try{
+    const response = await fetch("data/gallery.json", { cache:"no-store" });
+    if(!response.ok){
+      throw new Error("HTTP " + response.status);
+    }
+
+    const items = await response.json();
+    if(!Array.isArray(items)){
+      throw new Error("gallery.json 不是数组");
+    }
+
+    const list = items
+      .filter(item => item && item.enabled !== false)
+      .sort((a, b) => Number(b.sort || 0) - Number(a.sort || 0));
+
+    if(!list.length){
+      renderEmpty("图库目前还没有图片。");
+      return;
+    }
+
+    gallery.innerHTML = list.map(buildCard).join("");
+  }catch(error){
+    renderEmpty("图库数据读取失败。<br>请检查 <code>data/gallery.json</code> 是否存在，或 JSON 格式是否正确。");
+  }
+}
+
+loadGallery();
+
+gallery.addEventListener("click", event => {
+  const image = event.target.closest(".gallery-image");
+  if(!image){
+    return;
+  }
+
+  event.preventDefault();
+  openLightbox(image.currentSrc || image.src, image.alt);
+});
+
+lightbox.addEventListener("click", event => {
+  if(event.target === lightbox || event.target === lightboxClose){
+    closeLightbox();
+  }
+});
+
+document.addEventListener("keydown", event => {
+  if(event.key === "Escape" && lightbox.classList.contains("is-open")){
+    closeLightbox();
+  }
+});
+</script>
+
+</body>
+</html>
