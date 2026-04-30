@@ -306,8 +306,8 @@ body{
     font-size:18px;
   }
   .gallery{
-    column-count:1;
-    column-gap:0;
+    column-count:2;
+    column-gap:12px;
     padding:0 var(--site-gap) 18px;
   }
   .gallery-card{
@@ -374,7 +374,7 @@ body{
 
 <div class="lightbox" id="lightbox" aria-hidden="true">
   <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close preview">X</button>
-  <a class="lightbox-open" id="lightboxOpen" href="#" target="_blank" rel="noopener noreferrer">打开原图</a>
+  <a class="lightbox-open" id="lightboxOpen" href="#">打开原图</a>
   <img class="lightbox-image" id="lightboxImage" alt="">
 </div>
 
@@ -550,10 +550,19 @@ lightbox.addEventListener("click", event => {
   }
 });
 
+lightboxOpen.addEventListener("click", event => {
+  event.preventDefault();
+  event.stopPropagation();
+  const href = lightboxOpen.getAttribute("href");
+  if(href && href !== "#"){
+    window.location.href = href;
+  }
+});
+
 lightboxImage.addEventListener("click", event => {
   event.stopPropagation();
   if(lightboxImage.src){
-    window.open(lightboxImage.src, "_blank", "noopener,noreferrer");
+    window.location.href = lightboxImage.src;
   }
 });
 
