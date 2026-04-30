@@ -191,16 +191,21 @@ h1{
 .red{--bg:linear-gradient(145deg,#ff4545,#b60000)}
 .blue{--bg:linear-gradient(145deg,#48a6ff,#0052c8)}
 
-.rolling{animation:rolling .15s linear infinite}
-.done{animation:pop .5s ease both}
+.rolling{
+  animation:rolling .34s ease-in-out infinite;
+  will-change:transform, filter;
+}
+.done{animation:pop .55s ease both}
 
 @keyframes rolling{
-  50%{transform:scale(1.06)}
+  0%,100%{transform:translateY(0) scale(1)}
+  35%{transform:translateY(-10px) scale(1.12)}
+  70%{transform:translateY(4px) scale(.96)}
 }
 
 @keyframes pop{
-  0%{transform:scale(.9)}
-  60%{transform:scale(1.1)}
+  0%{transform:scale(.86)}
+  55%{transform:scale(1.18)}
   100%{transform:scale(1)}
 }
 
@@ -1086,7 +1091,7 @@ function load(){
 
   if(!lastUpdateTime){
     lastUpdateTime = now;
-    play(data);
+    renderStatic(data);
     return;
   }
 
