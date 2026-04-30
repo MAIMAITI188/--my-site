@@ -14,10 +14,11 @@ ADMIN_AUTH_FILE="/app/.deploy/nginx-admin.htpasswd"
 ADMIN_ROOT_CONF="/app/.deploy/nginx-admin-root.conf"
 ADMIN_AUTH_USER="${ADMIN_AUTH_USER:-admin}"
 ADMIN_AUTH_PASSWORD="${ADMIN_AUTH_PASSWORD:-Admin@2026!XG}"
-ADMIN_DOMAIN="${ADMIN_DOMAIN:-}"
+ADMIN_DOMAIN="${ADMIN_DOMAIN:-TH.hkxc888.com}"
 ADMIN_DOMAIN="${ADMIN_DOMAIN#http://}"
 ADMIN_DOMAIN="${ADMIN_DOMAIN#https://}"
 ADMIN_DOMAIN="${ADMIN_DOMAIN%%/*}"
+ADMIN_DOMAIN="$(printf '%s' "$ADMIN_DOMAIN" | tr '[:upper:]' '[:lower:]')"
 
 if [ -n "$ADMIN_AUTH_USER" ] && [ -n "$ADMIN_AUTH_PASSWORD" ]; then
     htpasswd -bcB "$ADMIN_AUTH_FILE" "$ADMIN_AUTH_USER" "$ADMIN_AUTH_PASSWORD" >/dev/null
