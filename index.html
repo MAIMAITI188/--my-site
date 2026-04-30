@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>新港天天彩</title>
+<script>
+if(window.self !== window.top || new URLSearchParams(window.location.search).has("embed")){
+  document.documentElement.classList.add("is-embedded");
+}
+</script>
 <style>
 *{box-sizing:border-box}
 
@@ -424,6 +429,128 @@ h1{
 
 @media(max-width:520px){
   .box{transform:scale(.36)}
+}
+
+.is-embedded body{
+  height:100vh;
+  padding:0;
+  align-items:center;
+  background:transparent;
+}
+
+.is-embedded .box{
+  width:100%;
+  max-width:none;
+  height:100%;
+  margin:0;
+  padding:12px 10px 34px;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  transform:none;
+  overflow:hidden;
+}
+
+.is-embedded .history-btn{
+  top:8px;
+  right:8px;
+  padding:6px 9px;
+  font-size:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,.12);
+}
+
+.is-embedded .title-row{
+  gap:8px;
+  padding-right:92px;
+}
+
+.is-embedded .title-logo{
+  width:34px;
+  height:34px;
+  flex-basis:34px;
+}
+
+.is-embedded h1{
+  font-size:22px;
+  line-height:1.05;
+}
+
+.is-embedded .meta-row{
+  margin:8px 0 12px;
+}
+
+.is-embedded .period-wrap{
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.is-embedded .period{
+  font-size:18px;
+}
+
+.is-embedded .countdown{
+  font-size:16px;
+}
+
+.is-embedded .balls{
+  width:100%;
+  gap:4px;
+  overflow:visible;
+}
+
+.is-embedded .item{
+  width:auto;
+  min-width:0;
+  max-width:72px;
+  flex:1 1 0;
+}
+
+.is-embedded .ball{
+  width:clamp(36px,12vw,56px);
+  height:clamp(36px,12vw,56px);
+  box-shadow:
+    inset 0 3px 7px rgba(255,255,255,.35),
+    inset 0 -5px 10px rgba(0,0,0,.24),
+    0 5px 12px rgba(0,0,0,.32);
+}
+
+.is-embedded .ball span{
+  font-size:clamp(17px,5vw,25px);
+}
+
+.is-embedded .shine{
+  right:5px;
+  bottom:6px;
+  width:14px;
+  height:8px;
+}
+
+.is-embedded .plus{
+  width:16px;
+  flex:0 0 16px;
+  line-height:clamp(36px,12vw,56px);
+  font-size:24px;
+}
+
+.is-embedded .note{
+  margin-top:6px;
+  min-height:30px;
+  font-size:clamp(11px,3.2vw,15px);
+  line-height:1.15;
+}
+
+.is-embedded .next-time{
+  left:10px;
+  bottom:8px;
+  right:10px;
+  font-size:14px;
+  text-align:left;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 </style>
 </head>
