@@ -317,7 +317,7 @@ body{
   </div>
 
   <div class="api-box">
-    <iframe class="api-frame" src="index.html?embed=1" title="开奖直播"></iframe>
+    <iframe class="api-frame" id="lotteryFrame" src="index.html?embed=1" title="开奖直播"></iframe>
   </div>
 
   <div class="tool-box">
@@ -352,6 +352,11 @@ function backMainPage(){
   document.getElementById("pickPage").style.display = "none";
   document.getElementById("mainPage").style.display = "block";
   window.scrollTo(0,0);
+}
+
+const pageParams = new URLSearchParams(window.location.search);
+if(pageParams.has("demo")){
+  document.getElementById("lotteryFrame").src = "index.html?embed=1&demo=1";
 }
 
 const gallery = document.getElementById("gallery");

@@ -552,6 +552,27 @@ h1{
   overflow:hidden;
   text-overflow:ellipsis;
 }
+
+.empty-balls .ball{
+  opacity:.34;
+  box-shadow:
+    inset 0 3px 7px rgba(255,255,255,.28),
+    inset 0 -5px 10px rgba(0,0,0,.12),
+    0 5px 12px rgba(0,0,0,.12);
+}
+
+.empty-balls .ball::after{
+  opacity:.86;
+}
+
+.empty-balls .plus,
+.empty-balls .note{
+  opacity:.45;
+}
+
+.is-embedded .empty-balls{
+  margin-top:2px;
+}
 </style>
 </head>
 <body>
@@ -595,6 +616,22 @@ const historyBtn = document.getElementById("historyBtn");
 const historyModal = document.getElementById("historyModal");
 const historyClose = document.getElementById("historyClose");
 const historyList = document.getElementById("historyList");
+const URL_PARAMS = new URLSearchParams(window.location.search);
+const IS_DEMO_MODE = URL_PARAMS.has("demo");
+const DEMO_LOTTERY_DATA = {
+  period:"2026001",
+  nextTime:"2026-05-01 21:30",
+  updateTime:"demo",
+  items:[
+    { num:"08", color:"red", note:"\u91d1/\u9f99" },
+    { num:"16", color:"blue", note:"\u6728/\u9a6c" },
+    { num:"23", color:"green", note:"\u6c34/\u72d7" },
+    { num:"31", color:"red", note:"\u706b/\u864e" },
+    { num:"38", color:"green", note:"\u571f/\u7f8a" },
+    { num:"42", color:"blue", note:"\u91d1/\u725b" },
+    { num:"49", color:"green", note:"\u6c34/\u86c7" }
+  ]
+};
 
 let index = 0;
 let timer = null;
@@ -670,10 +707,20 @@ async function loadServerData(){
 }
 
 function getCurrentLotteryData(){
+  if(IS_DEMO_MODE){
+    return DEMO_LOTTERY_DATA;
+  }
+
   return pickNewestData(loadJson(STORAGE_KEY, null), serverState.current);
 }
 
 function getCountdownLotteryData(){
+  if(IS_DEMO_MODE){
+    return {
+      nextDrawAtTs: Date.now() + 56 * 60 * 1000
+    };
+  }
+
   return pickNewestData(loadJson(COUNTDOWN_KEY, null), serverState.countdown);
 }
 
@@ -916,6 +963,7 @@ function ballHtml(color, num, extra = ""){
 
 function render(data, current, rollingNum, finish = -1){
   let html = "";
+  balls.classList.remove("empty-balls");
 
   data.items.forEach((item, i) => {
     const row = item || {};
@@ -943,11 +991,24 @@ function render(data, current, rollingNum, finish = -1){
 
 function renderStatic(data){
   let html = "";
+  balls.classList.remove("empty-balls");
   data.items.forEach((item, i) => {
     const row = item || {};
     if(i === 6) html += `<div class="plus">+</div>`;
     html += `<div class="item">${ballHtml(row.color, row.num)}<div class="note">${safeNote(row.note)}</div></div>`;
   });
+  balls.innerHTML = html;
+}
+
+function renderEmptyBalls(){
+  let html = "";
+  for(let i = 0; i < 7; i++){
+    if(i === 6){
+      html += `<div class="plus">+</div>`;
+    }
+    html += `<div class="item empty-item">${ballHtml("green", "")}<div class="note">&nbsp;</div></div>`;
+  }
+  balls.classList.add("empty-balls");
   balls.innerHTML = html;
 }
 
@@ -1008,7 +1069,7 @@ function load(){
   if(!data){
     periodText.innerText = "暂无数据";
     nextTimeText.innerText = "";
-    balls.innerHTML = "";
+    renderEmptyBalls();
     currentData = null;
     updateCountdown();
     return;
@@ -1016,7 +1077,7 @@ function load(){
 
   if(!Array.isArray(data.items) || !data.items.length){
     setHeader(data);
-    balls.innerHTML = "";
+    renderEmptyBalls();
     return;
   }
 
