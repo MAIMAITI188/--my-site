@@ -668,8 +668,14 @@ function loadJson(key, fallback){
 function normalizeServerState(raw){
   if(raw && typeof raw === "object" && !Array.isArray(raw)){
     if("current" in raw || "history" in raw || "countdown" in raw){
+      const current = raw.current && typeof raw.current === "object"
+        ? {
+            ...raw.current,
+            updateTime:raw.current.updateTime || raw.current.updatedAt || raw.exportedAt || ""
+          }
+        : null;
       return {
-        current: raw.current || null,
+        current,
         history: Array.isArray(raw.history) ? raw.history : [],
         countdown: raw.countdown || null
       };
@@ -1202,12 +1208,19 @@ function load(){
   const now = String(data.updateTime || "");
   setHeader(data);
 
-  if(!lastUpdateTime){
+  const animationState = loadAnimationState(data);
+  if(animationState){
     lastUpdateTime = now;
-    const animationState = loadAnimationState(data);
-    if(animationState && resumeAnimation(data, animationState.elapsed)){
+    if(!isPlaying && resumeAnimation(data, animationState.elapsed)){
       return;
     }
+    if(isPlaying){
+      return;
+    }
+  }
+
+  if(!lastUpdateTime){
+    lastUpdateTime = now;
     renderStatic(data);
     return;
   }
