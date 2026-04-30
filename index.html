@@ -459,6 +459,7 @@ h1{
 const STORAGE_KEY = "lhc";
 const HISTORY_KEY = "lhc_history";
 const COUNTDOWN_KEY = "lhc_countdown";
+const SERVER_DATA_URL = "data/lottery.json";
 const periodText = document.getElementById("periodText");
 const nextTimeText = document.getElementById("nextTimeText");
 const countdownText = document.getElementById("countdownText");
@@ -473,6 +474,11 @@ let timer = null;
 let lastUpdateTime = "";
 let isPlaying = false;
 let currentData = null;
+let serverState = {
+  current:null,
+  history:[],
+  countdown:null
+};
 
 function loadJson(key, fallback){
   const raw = localStorage.getItem(key);
@@ -486,6 +492,81 @@ function loadJson(key, fallback){
   }catch(error){
     return fallback;
   }
+}
+
+function normalizeServerState(raw){
+  if(raw && typeof raw === "object" && !Array.isArray(raw)){
+    if("current" in raw || "history" in raw || "countdown" in raw){
+      return {
+        current: raw.current || null,
+        history: Array.isArray(raw.history) ? raw.history : [],
+        countdown: raw.countdown || null
+      };
+    }
+
+    if(raw.period && Array.isArray(raw.items)){
+      return {
+        current: raw,
+        history: [],
+        countdown: null
+      };
+    }
+  }
+
+  return {
+    current:null,
+    history:[],
+    countdown:null
+  };
+}
+
+async function loadServerData(){
+  if(window.location.protocol === "file:"){
+    return;
+  }
+
+  try{
+    const response = await fetch(`${SERVER_DATA_URL}?v=${Date.now()}`, { cache:"no-store" });
+    if(!response.ok){
+      throw new Error("HTTP " + response.status);
+    }
+    const raw = await response.json();
+    serverState = normalizeServerState(raw);
+    load();
+  }catch(error){
+    serverState = {
+      current:null,
+      history:[],
+      countdown:null
+    };
+  }
+}
+
+function getCurrentLotteryData(){
+  return pickNewestData(loadJson(STORAGE_KEY, null), serverState.current);
+}
+
+function getCountdownLotteryData(){
+  return pickNewestData(loadJson(COUNTDOWN_KEY, null), serverState.countdown);
+}
+
+function dataTimestamp(value){
+  if(!value || typeof value !== "object"){
+    return 0;
+  }
+
+  const timestamp = Number(value.updateTime || value.updatedAt || 0);
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function pickNewestData(localData, serverData){
+  if(!localData){
+    return serverData;
+  }
+  if(!serverData){
+    return localData;
+  }
+  return dataTimestamp(serverData) > dataTimestamp(localData) ? serverData : localData;
 }
 
 const SAFE_COLORS = new Set(["red", "blue", "green"]);
@@ -576,7 +657,7 @@ function getCountdownTimestamp(data){
 }
 
 function updateCountdown(){
-  const countdownData = loadJson(COUNTDOWN_KEY, null);
+  const countdownData = getCountdownLotteryData();
   const countdownTimestamp = getCountdownTimestamp(countdownData);
   const currentTimestamp = getCountdownTimestamp(currentData);
   const timestamp = Number.isFinite(countdownTimestamp) ? countdownTimestamp : currentTimestamp;
@@ -601,8 +682,11 @@ function updateCountdown(){
 }
 
 function loadHistory(){
-  const list = loadJson(HISTORY_KEY, []);
-  return Array.isArray(list) ? list : [];
+  const list = loadJson(HISTORY_KEY, null);
+  if(Array.isArray(list) && list.length){
+    return list;
+  }
+  return Array.isArray(serverState.history) ? serverState.history : [];
 }
 
 function buildHistoryRows(items){
@@ -793,7 +877,7 @@ function play(data){
 }
 
 function load(){
-  const data = loadJson(STORAGE_KEY, null);
+  const data = getCurrentLotteryData();
   if(!data){
     periodText.innerText = "暂无数据";
     nextTimeText.innerText = "";
@@ -830,8 +914,10 @@ function load(){
 }
 
 load();
+loadServerData();
 updateCountdown();
 setInterval(load, 5000);
+setInterval(loadServerData, 15000);
 setInterval(updateCountdown, 1000);
 
 historyBtn.addEventListener("click", openHistory);

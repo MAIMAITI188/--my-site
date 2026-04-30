@@ -1,0 +1,11 @@
+{
+    "name": "my-site/gallery-lottery",
+    "description": "Gallery and Lottery Application",
+    "require": {
+        "php": "^8.0"
+    },
+    "require-dev": {},
+    "config": {
+        "optimize-autoloader": true
+    }
+}

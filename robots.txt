@@ -1,4 +1,5 @@
 User-agent: *
 Disallow: /HTadmin.html
 Disallow: /gallery-admin.html
+Disallow: /admin/
 Disallow: /data/

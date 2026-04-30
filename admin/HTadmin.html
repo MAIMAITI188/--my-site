@@ -174,6 +174,13 @@ button:hover{
   margin-bottom:16px;
 }
 
+.publish-row{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-bottom:12px;
+}
+
 .link-btn{
   display:block;
   text-align:center;
@@ -185,6 +192,109 @@ button:hover{
   font-size:15px;
   font-weight:bold;
   background:linear-gradient(135deg,#2f7df0,#1b62c8);
+}
+
+.publish-note{
+  margin-bottom:18px;
+}
+
+body.auth-locked{
+  overflow:hidden;
+}
+
+body.auth-locked .box,
+body.auth-locked .admin-modal{
+  display:none;
+}
+
+.auth-screen{
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:
+    radial-gradient(circle at top left,rgba(34,197,94,.28),transparent 32%),
+    linear-gradient(135deg,#0f172a,#064e3b);
+}
+
+body.auth-locked .auth-screen{
+  display:flex;
+}
+
+.auth-card{
+  width:min(420px,100%);
+  padding:26px;
+  border-radius:22px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.2);
+  box-shadow:0 22px 60px rgba(0,0,0,.32);
+}
+
+.auth-card h1{
+  margin:0 0 8px;
+  font-size:28px;
+}
+
+.auth-card p{
+  margin:0 0 20px;
+  color:#bbf7d0;
+  line-height:1.6;
+}
+
+.auth-field{
+  margin-bottom:12px;
+}
+
+.auth-field label{
+  display:block;
+  margin-bottom:7px;
+  color:#dcfce7;
+  font-size:14px;
+  font-weight:bold;
+}
+
+.auth-field input{
+  width:100%;
+}
+
+.auth-login-button{
+  margin-top:8px;
+}
+
+.auth-msg{
+  min-height:22px;
+  margin-top:12px;
+  color:#fecaca;
+  font-size:14px;
+  font-weight:bold;
+}
+
+.auth-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+  padding-bottom:14px;
+  border-bottom:1px solid rgba(255,255,255,.14);
+  color:#bbf7d0;
+  font-size:14px;
+}
+
+.auth-logout{
+  width:auto;
+  margin:0;
+  padding:9px 14px;
+  border-radius:10px;
+  background:#475569;
+  font-size:14px;
+}
+
+.auth-logout:hover{
+  background:#334155;
 }
 
 .admin-modal{
@@ -403,7 +513,13 @@ button:hover{
 @media(max-width:720px){
   body{padding:14px}
   .box{padding:18px}
-  .link-row{grid-template-columns:1fr}
+  .auth-card{padding:22px}
+  .auth-toolbar{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  .link-row,
+  .publish-row{grid-template-columns:1fr}
   .head{display:none}
   .row{
     grid-template-columns:70px 1fr 64px;
@@ -420,16 +536,42 @@ button:hover{
 }
 </style>
 </head>
-<body>
+<body class="auth-locked">
+
+<div class="auth-screen" id="authScreen" aria-hidden="false">
+  <form class="auth-card" id="authForm" autocomplete="off">
+    <h1>密钥登录</h1>
+    <p>请输入后台密钥后再进入开奖管理后台。</p>
+    <div class="auth-field">
+      <label for="authKey">密钥</label>
+      <input id="authKey" type="password" autocomplete="current-password" placeholder="请输入后台密钥">
+    </div>
+    <button class="auth-login-button" type="submit">登录后台</button>
+    <div class="auth-msg" id="authMsg" aria-live="polite"></div>
+  </form>
+</div>
 
 <div class="box">
+  <div class="auth-toolbar">
+    <span>已登录后台</span>
+    <button class="auth-logout" id="logoutBtn" type="button">退出登录</button>
+  </div>
+
   <h2>新港天天彩后台录入</h2>
 
   <div class="link-row">
     <a class="link-btn" href="gallery-admin.html">打开图库后台</a>
-    <a class="link-btn" href="WZZT.html">打开前台首页</a>
+    <a class="link-btn" href="../WZZT.html">打开前台首页</a>
     <button class="link-btn" type="button" onclick="openHistoryManager()">历史开奖管理</button>
   </div>
+
+  <div class="publish-row">
+    <button class="link-btn" id="downloadLotteryBtn" type="button">下载开奖数据</button>
+    <button class="link-btn" id="importLotteryBtn" type="button">导入开奖数据</button>
+    <a class="link-btn" href="../data/lottery.json" target="_blank" rel="noopener noreferrer">查看线上数据</a>
+  </div>
+  <input id="importLotteryFile" type="file" accept=".json,application/json" style="display:none;">
+  <div class="hint publish-note">GitHub Pages 不能直接写入文件。保存后请下载开奖数据，并上传覆盖 <code>data/lottery.json</code>，线上访客才会看到更新。</div>
 
   <div class="top">
     <input id="period" placeholder="期号，例如：2026001">
@@ -476,6 +618,59 @@ button:hover{
 </div>
 
 <script>
+const ADMIN_LOGIN_KEY = "ji772095.....";
+const AUTH_SESSION_KEY = "ht_admin_key_authenticated";
+const authScreen = document.getElementById("authScreen");
+const authForm = document.getElementById("authForm");
+const authKeyInput = document.getElementById("authKey");
+const authMsg = document.getElementById("authMsg");
+const logoutBtn = document.getElementById("logoutBtn");
+
+function showAuthMessage(text){
+  authMsg.textContent = text;
+}
+
+function unlockAdmin(){
+  document.body.classList.remove("auth-locked");
+  authScreen.setAttribute("aria-hidden", "true");
+  showAuthMessage("");
+}
+
+function lockAdmin(){
+  sessionStorage.removeItem(AUTH_SESSION_KEY);
+  document.body.classList.add("auth-locked");
+  authScreen.setAttribute("aria-hidden", "false");
+  authKeyInput.value = "";
+  setTimeout(() => authKeyInput.focus(), 0);
+}
+
+function isAdminAuthenticated(){
+  return sessionStorage.getItem(AUTH_SESSION_KEY) === "yes";
+}
+
+authForm.addEventListener("submit", event => {
+  event.preventDefault();
+
+  const loginKey = authKeyInput.value.trim();
+  if(loginKey === ADMIN_LOGIN_KEY){
+    sessionStorage.setItem(AUTH_SESSION_KEY, "yes");
+    unlockAdmin();
+    return;
+  }
+
+  showAuthMessage("密钥不正确");
+  authKeyInput.value = "";
+  authKeyInput.focus();
+});
+
+logoutBtn.addEventListener("click", lockAdmin);
+
+if(isAdminAuthenticated()){
+  unlockAdmin();
+}else{
+  lockAdmin();
+}
+
 const form = document.getElementById("form");
 const periodInput = document.getElementById("period");
 const nextTimeInput = document.getElementById("nextTime");
@@ -486,9 +681,14 @@ const editBannerText = document.getElementById("editBannerText");
 const historyModal = document.getElementById("historyModal");
 const historyClose = document.getElementById("historyClose");
 const historyManageList = document.getElementById("historyManageList");
+const downloadLotteryBtn = document.getElementById("downloadLotteryBtn");
+const importLotteryBtn = document.getElementById("importLotteryBtn");
+const importLotteryFile = document.getElementById("importLotteryFile");
 const STORAGE_KEY = "lhc";
 const HISTORY_KEY = "lhc_history";
 const COUNTDOWN_KEY = "lhc_countdown";
+const LOTTERY_EXPORT_FILENAME = "lottery.json";
+const LOTTERY_SAVE_API = "api/save-lottery.php";
 let editingHistoryIndex = null;
 
 const colorText = {
@@ -659,6 +859,117 @@ function saveHistory(list){
   localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
 }
 
+function buildLotteryExportPayload(){
+  return {
+    current: loadJson(STORAGE_KEY, null),
+    history: loadHistory(),
+    countdown: loadJson(COUNTDOWN_KEY, null),
+    exportedAt: Date.now()
+  };
+}
+
+function downloadJsonFile(filename, data){
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type:"application/json;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function downloadLotteryJson(){
+  const payload = buildLotteryExportPayload();
+  if(!payload.current && !payload.countdown && !payload.history.length){
+    message.innerText = "还没有可导出的开奖数据，请先保存一期号码";
+    return;
+  }
+
+  downloadJsonFile(LOTTERY_EXPORT_FILENAME, payload);
+  message.innerText = "已下载 lottery.json，请上传覆盖 GitHub 仓库里的 data/lottery.json";
+}
+
+async function saveLotteryToServer(successText){
+  try{
+    const response = await fetch(LOTTERY_SAVE_API, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify(buildLotteryExportPayload())
+    });
+    const result = await response.json().catch(() => ({}));
+    if(!response.ok || !result.ok){
+      throw new Error(result.error || "server_save_failed");
+    }
+    message.innerText = successText + "，线上数据已同步";
+  }catch(error){
+    message.innerText = successText + "，但服务器写入失败；请先确认 Hostinger 已给 /admin 加密码保护，或下载 lottery.json 手动上传";
+  }
+}
+
+function normalizeLotteryImport(raw){
+  if(raw && typeof raw === "object" && !Array.isArray(raw)){
+    if("current" in raw || "history" in raw || "countdown" in raw){
+      return {
+        current: raw.current || null,
+        history: Array.isArray(raw.history) ? raw.history : [],
+        countdown: raw.countdown || null
+      };
+    }
+
+    if(raw.period && Array.isArray(raw.items)){
+      return {
+        current: raw,
+        history: [],
+        countdown: null
+      };
+    }
+  }
+
+  return null;
+}
+
+function applyLotteryImport(payload){
+  if(payload.current){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload.current));
+  }else{
+    localStorage.removeItem(STORAGE_KEY);
+  }
+
+  saveHistory(Array.isArray(payload.history) ? payload.history : []);
+
+  if(payload.countdown){
+    localStorage.setItem(COUNTDOWN_KEY, JSON.stringify(payload.countdown));
+  }else{
+    localStorage.removeItem(COUNTDOWN_KEY);
+  }
+
+  editingHistoryIndex = null;
+  editBanner.classList.remove("is-open");
+  editBannerText.innerText = "正在编辑历史记录";
+  loadOld();
+  message.innerText = "开奖数据已导入，可以继续编辑或重新下载发布文件";
+  saveLotteryToServer("开奖数据已导入");
+}
+
+async function importLotteryJsonFile(file){
+  if(!file){
+    return;
+  }
+
+  try{
+    const raw = JSON.parse(await file.text());
+    const payload = normalizeLotteryImport(raw);
+    if(!payload){
+      throw new Error("invalid format");
+    }
+    applyLotteryImport(payload);
+  }catch(error){
+    message.innerText = "导入失败：请选择正确的 lottery.json 文件";
+  }
+}
+
 function pushHistory(entry){
   if(!entry || !entry.period || !Array.isArray(entry.items) || !entry.items.length){
     return;
@@ -702,6 +1013,7 @@ function saveCountdownSettings(){
   }
 
   message.innerText = "倒计时已单独保存，不会触发号码更新";
+  saveLotteryToServer("倒计时已单独保存，不会触发号码更新");
 }
 
 function buildHistoryBalls(items){
@@ -840,6 +1152,7 @@ function deleteHistoryRecord(index){
 
   renderHistoryManager();
   message.innerText = `已删除第 ${entry.period || "--"} 期历史记录`;
+  saveLotteryToServer(`已删除第 ${entry.period || "--"} 期历史记录`);
 }
 
 function syncRow(i, format = false){
@@ -944,12 +1257,14 @@ function save(){
     editingHistoryIndex = null;
     renderHistoryManager();
     message.innerText = `历史记录已修改：第 ${data.period} 期`;
+    saveLotteryToServer(`历史记录已修改：第 ${data.period} 期`);
     return;
   }
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   pushHistory(data);
   message.innerText = "保存成功，前台将在几秒内自动更新";
+  saveLotteryToServer("保存成功，前台将在几秒内自动更新");
 }
 
 function loadOld(){
@@ -978,6 +1293,14 @@ function loadOld(){
 }
 
 loadOld();
+
+downloadLotteryBtn.addEventListener("click", downloadLotteryJson);
+importLotteryBtn.addEventListener("click", () => importLotteryFile.click());
+importLotteryFile.addEventListener("change", event => {
+  const file = event.target.files[0];
+  importLotteryJsonFile(file);
+  importLotteryFile.value = "";
+});
 
 historyClose.addEventListener("click", closeHistoryManager);
 historyModal.addEventListener("click", event => {
