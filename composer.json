@@ -2,7 +2,7 @@
     "name": "my-site/gallery-lottery",
     "description": "Gallery and Lottery Application",
     "require": {
-        "php": "^8.0"
+        "php": "^8.2"
     },
     "require-dev": {},
     "config": {
