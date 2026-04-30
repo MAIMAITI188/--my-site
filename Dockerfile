@@ -24,7 +24,7 @@ RUN mkdir -p /var/log/nginx && \
     mkdir -p /var/run/nginx
 
 # 暴露端口
-EXPOSE 8080
+EXPOSE 3000
 
 # 启动脚本
 ENTRYPOINT ["/bin/sh", "/app/start.sh"]
