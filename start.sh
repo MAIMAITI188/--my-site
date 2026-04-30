@@ -11,7 +11,10 @@ chmod 775 /app/data
 mkdir -p /app/.deploy
 ADMIN_AUTH_CONF="/app/.deploy/nginx-admin-auth.conf"
 ADMIN_AUTH_FILE="/app/.deploy/nginx-admin.htpasswd"
-if [ -n "${ADMIN_AUTH_USER:-}" ] && [ -n "${ADMIN_AUTH_PASSWORD:-}" ]; then
+ADMIN_AUTH_USER="${ADMIN_AUTH_USER:-admin}"
+ADMIN_AUTH_PASSWORD="${ADMIN_AUTH_PASSWORD:-Admin@2026!XG}"
+
+if [ -n "$ADMIN_AUTH_USER" ] && [ -n "$ADMIN_AUTH_PASSWORD" ]; then
     htpasswd -bcB "$ADMIN_AUTH_FILE" "$ADMIN_AUTH_USER" "$ADMIN_AUTH_PASSWORD" >/dev/null
     chown nobody:nogroup "$ADMIN_AUTH_FILE" 2>/dev/null || true
     chmod 640 "$ADMIN_AUTH_FILE"
