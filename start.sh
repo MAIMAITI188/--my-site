@@ -24,7 +24,7 @@ ADMIN_DOMAIN="${ADMIN_DOMAIN%%/*}"
 ADMIN_DOMAIN="$(printf '%s' "$ADMIN_DOMAIN" | tr '[:upper:]' '[:lower:]')"
 
 if [ -n "$ADMIN_AUTH_USER" ] && [ -n "$ADMIN_AUTH_PASSWORD" ]; then
-    htpasswd -bcB "$ADMIN_AUTH_FILE" "$ADMIN_AUTH_USER" "$ADMIN_AUTH_PASSWORD" >/dev/null
+    php -r '$u=$argv[1]; $p=$argv[2]; echo $u . ":{SHA}" . base64_encode(sha1($p, true)) . PHP_EOL;' "$ADMIN_AUTH_USER" "$ADMIN_AUTH_PASSWORD" > "$ADMIN_AUTH_FILE"
     chown nobody:nogroup "$ADMIN_AUTH_FILE" 2>/dev/null || true
     chmod 640 "$ADMIN_AUTH_FILE"
     cat > "$ADMIN_AUTH_CONF" <<EOF
