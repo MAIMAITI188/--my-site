@@ -904,16 +904,17 @@ async function saveGalleryToServer(){
   try{
     const response = await fetch(SERVER_SAVE_API, {
       method:"POST",
+      credentials:"same-origin",
       headers:{ "Content-Type":"application/json" },
       body:JSON.stringify(exportItems())
     });
     const result = await response.json().catch(() => ({}));
     if(!response.ok || !result.ok){
-      throw new Error(result.error || "server_save_failed");
+      throw new Error(`HTTP ${response.status} ${result.error || "server_save_failed"}`);
     }
     setStatus("\u56fe\u5e93\u5df2\u540c\u6b65\u5230\u670d\u52a1\u5668\uff0c\u524d\u53f0\u4f1a\u8bfb\u53d6\u65b0\u7684 data/gallery.json\u3002");
   }catch(error){
-    setStatus("\u670d\u52a1\u5668\u5199\u5165\u5931\u8d25\uff1a\u8bf7\u786e\u8ba4 Dokploy \u5df2\u8bbe\u7f6e ADMIN_AUTH_USER\u3001ADMIN_AUTH_PASSWORD\uff0c\u5e76\u7ed9 /app/data \u6302\u8f7d\u6301\u4e45\u5316\u5b58\u50a8\u3002", true);
+    setStatus(`\u670d\u52a1\u5668\u5199\u5165\u5931\u8d25\uff1a${error.message}\u3002\u5982\u679c\u662f HTTP 401\uff0c\u8bf7\u5237\u65b0\u540e\u91cd\u65b0\u767b\u5f55\u540e\u53f0\u3002`, true);
   }
 }
 
