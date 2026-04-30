@@ -106,8 +106,18 @@ if ($target === false || !is_dir($target)) {
 
 $file = $target . DIRECTORY_SEPARATOR . 'gallery.json';
 $json = json_encode($clean, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
-if ($json === false || file_put_contents($file, $json . PHP_EOL, LOCK_EX) === false) {
-    respond(500, ['ok' => false, 'error' => 'write_failed']);
+if ($json === false) {
+    respond(500, ['ok' => false, 'error' => 'json_encode_failed']);
+}
+
+$temp = $file . '.tmp';
+if (file_put_contents($temp, $json . PHP_EOL, LOCK_EX) === false) {
+    respond(500, ['ok' => false, 'error' => 'write_temp_failed']);
+}
+
+if (!rename($temp, $file)) {
+    @unlink($temp);
+    respond(500, ['ok' => false, 'error' => 'rename_failed']);
 }
 
 respond(200, ['ok' => true, 'file' => 'data/gallery.json']);
