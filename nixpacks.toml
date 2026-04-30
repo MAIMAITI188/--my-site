@@ -1,2 +1,5 @@
 [phases.setup]
-nixPkgs = ["php82"]
+nixPkgs = ["php82", "nginx", "apacheHttpd"]
+
+[phases.install]
+cmds = ["echo 'No Composer dependencies to install'"]
