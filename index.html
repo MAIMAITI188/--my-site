@@ -612,6 +612,7 @@ h1{
 const STORAGE_KEY = "lhc";
 const HISTORY_KEY = "lhc_history";
 const COUNTDOWN_KEY = "lhc_countdown";
+const ANIMATION_STATE_KEY = "lhc_animation_state";
 const SERVER_DATA_URL = "data/lottery.json";
 const periodText = document.getElementById("periodText");
 const nextTimeText = document.getElementById("nextTimeText");
@@ -643,6 +644,7 @@ let timer = null;
 let lastUpdateTime = "";
 let isPlaying = false;
 let currentData = null;
+let activeTimeouts = [];
 let serverState = {
   current:null,
   history:[],
@@ -966,6 +968,87 @@ function ballHtml(color, num, extra = ""){
   return `<div class="ball ${safeColor(color)} ${safeExtraClass(extra)}"><span>${displayNum}</span><i class="shine"></i></div>`;
 }
 
+function lotteryKey(data){
+  return String(data?.updateTime || data?.updatedAt || data?.period || "");
+}
+
+function animationTiming(position){
+  let roll = 4000;
+  let pause = 2000;
+
+  if(position >= 3 && position <= 5){
+    roll = 5000;
+    pause = 3000;
+  }
+
+  if(position === 6){
+    roll = 8000;
+    pause = 3000;
+  }
+
+  return { roll, pause, total:roll + pause };
+}
+
+function animationTotalDuration(data){
+  const count = Array.isArray(data?.items) ? data.items.length : 0;
+  let total = 0;
+  for(let i = 0; i < count; i++){
+    total += animationTiming(i).total;
+  }
+  return total;
+}
+
+function saveAnimationState(data){
+  const key = lotteryKey(data);
+  if(!key) return;
+  localStorage.setItem(ANIMATION_STATE_KEY, JSON.stringify({
+    key,
+    startedAt:Date.now(),
+    duration:animationTotalDuration(data)
+  }));
+}
+
+function loadAnimationState(data){
+  const state = loadJson(ANIMATION_STATE_KEY, null);
+  const duration = animationTotalDuration(data);
+
+  if(state && state.key === lotteryKey(data)){
+    const startedAt = Number(state.startedAt || 0);
+    const savedDuration = Number(state.duration || duration);
+    const elapsed = Date.now() - startedAt;
+    if(Number.isFinite(elapsed) && elapsed >= 0 && elapsed < savedDuration){
+      return { elapsed };
+    }
+    localStorage.removeItem(ANIMATION_STATE_KEY);
+  }
+
+  const serverStartedAt = dataTimestamp(data);
+  const serverElapsed = Date.now() - serverStartedAt;
+  if(Number.isFinite(serverElapsed) && serverElapsed >= 0 && serverElapsed < duration){
+    return { elapsed:serverElapsed };
+  }
+
+  return null;
+}
+
+function clearAnimationTimers(){
+  if(timer){
+    clearInterval(timer);
+    timer = null;
+  }
+  activeTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+  activeTimeouts = [];
+}
+
+function setAnimationTimeout(callback, delay){
+  const timeoutId = setTimeout(() => {
+    activeTimeouts = activeTimeouts.filter(id => id !== timeoutId);
+    callback();
+  }, delay);
+  activeTimeouts.push(timeoutId);
+  return timeoutId;
+}
+
 function render(data, current, rollingNum, finish = -1){
   let html = "";
   balls.classList.remove("empty-balls");
@@ -1025,48 +1108,78 @@ function setHeader(data){
 }
 
 function play(data){
+  saveAnimationState(data);
+  playFrom(data, 0, 0);
+}
+
+function playFrom(data, startIndex = 0, offsetMs = 0){
+  clearAnimationTimers();
   isPlaying = true;
   setHeader(data);
-  index = 0;
+  index = Math.max(0, Math.min(startIndex, data.items.length));
 
   function next(){
     if(index >= data.items.length){
       renderStatic(data);
       isPlaying = false;
+      localStorage.removeItem(ANIMATION_STATE_KEY);
       return;
     }
 
-    let roll = 4000;
-    let pause = 2000;
-
-    if(index >= 3 && index <= 5){
-      roll = 5000;
-      pause = 3000;
-    }
-
-    if(index === 6){
-      roll = 8000;
-      pause = 3000;
-    }
+    const { roll, pause, total } = animationTiming(index);
+    const elapsedInStep = Math.max(0, Math.min(offsetMs, total));
+    offsetMs = 0;
 
     timer = setInterval(() => {
       const n = Math.floor(Math.random() * 49) + 1;
       render(data, index, String(n).padStart(2, "0"));
     }, 80);
 
-    setTimeout(() => {
+    if(elapsedInStep >= roll){
       clearInterval(timer);
+      timer = null;
       const row = data.items[index] || {};
       render(data, index, row.num, index);
 
-      setTimeout(() => {
+      setAnimationTimeout(() => {
+        index++;
+        next();
+      }, Math.max(0, total - elapsedInStep));
+      return;
+    }
+
+    setAnimationTimeout(() => {
+      clearInterval(timer);
+      timer = null;
+      const row = data.items[index] || {};
+      render(data, index, row.num, index);
+
+      setAnimationTimeout(() => {
         index++;
         next();
       }, pause);
-    }, roll);
+    }, Math.max(0, roll - elapsedInStep));
   }
 
   next();
+}
+
+function resumeAnimation(data, elapsed){
+  let remaining = elapsed;
+  for(let i = 0; i < data.items.length; i++){
+    const timing = animationTiming(i);
+    if(remaining < timing.total){
+      for(let done = 0; done < i; done++){
+        render(data, done + 1, "");
+      }
+      playFrom(data, i, remaining);
+      return true;
+    }
+    remaining -= timing.total;
+  }
+
+  localStorage.removeItem(ANIMATION_STATE_KEY);
+  return false;
 }
 
 function load(){
@@ -1091,6 +1204,10 @@ function load(){
 
   if(!lastUpdateTime){
     lastUpdateTime = now;
+    const animationState = loadAnimationState(data);
+    if(animationState && resumeAnimation(data, animationState.elapsed)){
+      return;
+    }
     renderStatic(data);
     return;
   }
