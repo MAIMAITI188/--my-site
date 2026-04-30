@@ -1,0 +1,7 @@
+.git
+.deploy
+hostinger-upload*.zip
+*.log
+*.bak
+.env
+node_modules

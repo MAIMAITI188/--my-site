@@ -58,7 +58,7 @@ if (!has_basic_auth()) {
     respond(403, [
         'ok' => false,
         'error' => 'admin_directory_not_protected',
-        'message' => 'Protect the admin directory with Hostinger password protection before server writes are enabled.'
+        'message' => 'Protect the admin directory with server-side Basic Auth before server writes are enabled.'
     ]);
 }
 

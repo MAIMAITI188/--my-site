@@ -536,25 +536,25 @@ body.auth-locked .auth-screen{
 }
 </style>
 </head>
-<body class="auth-locked">
+<body>
 
-<div class="auth-screen" id="authScreen" aria-hidden="false">
+<div class="auth-screen" id="authScreen" aria-hidden="true">
   <form class="auth-card" id="authForm" autocomplete="off">
-    <h1>密钥登录</h1>
-    <p>请输入后台密钥后再进入开奖管理后台。</p>
+    <h1>服务器验证</h1>
+    <p>后台由服务器 Basic Auth 保护。若看到此页面，请刷新并使用浏览器登录框进入。</p>
     <div class="auth-field">
       <label for="authKey">密钥</label>
-      <input id="authKey" type="password" autocomplete="current-password" placeholder="请输入后台密钥">
+      <input id="authKey" type="password" autocomplete="current-password" placeholder="请使用服务器登录框">
     </div>
-    <button class="auth-login-button" type="submit">登录后台</button>
+    <button class="auth-login-button" type="submit">刷新重新验证</button>
     <div class="auth-msg" id="authMsg" aria-live="polite"></div>
   </form>
 </div>
 
 <div class="box">
   <div class="auth-toolbar">
-    <span>已登录后台</span>
-    <button class="auth-logout" id="logoutBtn" type="button">退出登录</button>
+    <span>后台已由服务器密码保护</span>
+    <button class="auth-logout" id="logoutBtn" type="button">重新验证</button>
   </div>
 
   <h2>新港天天彩后台录入</h2>
@@ -571,7 +571,7 @@ body.auth-locked .auth-screen{
     <a class="link-btn" href="../data/lottery.json" target="_blank" rel="noopener noreferrer">查看线上数据</a>
   </div>
   <input id="importLotteryFile" type="file" accept=".json,application/json" style="display:none;">
-  <div class="hint publish-note">GitHub Pages 不能直接写入文件。保存后请下载开奖数据，并上传覆盖 <code>data/lottery.json</code>，线上访客才会看到更新。</div>
+  <div class="hint publish-note">Dokploy 部署后可直接同步到服务器；“下载开奖数据”保留为备份和手动恢复用。</div>
 
   <div class="top">
     <input id="period" placeholder="期号，例如：2026001">
@@ -618,7 +618,6 @@ body.auth-locked .auth-screen{
 </div>
 
 <script>
-const ADMIN_LOGIN_KEY = "ji772095.....";
 const AUTH_SESSION_KEY = "ht_admin_key_authenticated";
 const authScreen = document.getElementById("authScreen");
 const authForm = document.getElementById("authForm");
@@ -638,10 +637,7 @@ function unlockAdmin(){
 
 function lockAdmin(){
   sessionStorage.removeItem(AUTH_SESSION_KEY);
-  document.body.classList.add("auth-locked");
-  authScreen.setAttribute("aria-hidden", "false");
-  authKeyInput.value = "";
-  setTimeout(() => authKeyInput.focus(), 0);
+  window.location.reload();
 }
 
 function isAdminAuthenticated(){
@@ -650,26 +646,12 @@ function isAdminAuthenticated(){
 
 authForm.addEventListener("submit", event => {
   event.preventDefault();
-
-  const loginKey = authKeyInput.value.trim();
-  if(loginKey === ADMIN_LOGIN_KEY){
-    sessionStorage.setItem(AUTH_SESSION_KEY, "yes");
-    unlockAdmin();
-    return;
-  }
-
-  showAuthMessage("密钥不正确");
-  authKeyInput.value = "";
-  authKeyInput.focus();
+  window.location.reload();
 });
 
 logoutBtn.addEventListener("click", lockAdmin);
 
-if(isAdminAuthenticated()){
-  unlockAdmin();
-}else{
-  lockAdmin();
-}
+unlockAdmin();
 
 const form = document.getElementById("form");
 const periodInput = document.getElementById("period");
@@ -888,7 +870,7 @@ function downloadLotteryJson(){
   }
 
   downloadJsonFile(LOTTERY_EXPORT_FILENAME, payload);
-  message.innerText = "已下载 lottery.json，请上传覆盖 GitHub 仓库里的 data/lottery.json";
+  message.innerText = "已下载 lottery.json，可作为备份，必要时上传覆盖服务器里的 data/lottery.json";
 }
 
 async function saveLotteryToServer(successText){
@@ -904,7 +886,7 @@ async function saveLotteryToServer(successText){
     }
     message.innerText = successText + "，线上数据已同步";
   }catch(error){
-    message.innerText = successText + "，但服务器写入失败；请先确认 Hostinger 已给 /admin 加密码保护，或下载 lottery.json 手动上传";
+    message.innerText = successText + "，但服务器写入失败；请确认 Dokploy 已设置 ADMIN_AUTH_USER、ADMIN_AUTH_PASSWORD，并给 /app/data 挂载持久化存储";
   }
 }
 
