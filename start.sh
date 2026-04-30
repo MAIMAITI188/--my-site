@@ -5,6 +5,9 @@ set -e
 mkdir -p /app/data /app/data/gallery-images
 chown -R www-data:www-data /app/data
 chmod 775 /app/data
+mkdir -p /tmp/nginx-client-body
+chown -R nobody:nogroup /tmp/nginx-client-body 2>/dev/null || true
+chmod 777 /tmp/nginx-client-body
 
 # Dokploy/容器环境下用环境变量生成后台 Basic Auth。
 # 设置 ADMIN_AUTH_USER 和 ADMIN_AUTH_PASSWORD 后，/admin/ 和后台写入 API 都会被服务器级密码保护。

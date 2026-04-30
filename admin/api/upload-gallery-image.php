@@ -40,6 +40,10 @@ if (($file['size'] ?? 0) <= 0 || ($file['size'] ?? 0) > $maxSize) {
 }
 
 $mime = mime_content_type($file['tmp_name']) ?: '';
+if ($mime === 'application/octet-stream' || $mime === '') {
+    $imageInfo = @getimagesize($file['tmp_name']);
+    $mime = is_array($imageInfo) && isset($imageInfo['mime']) ? (string) $imageInfo['mime'] : $mime;
+}
 $extensions = [
     'image/jpeg' => 'jpg',
     'image/png' => 'png',
