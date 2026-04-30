@@ -2,8 +2,8 @@
 set -e
 
 # 确保data目录存在且有写入权限
-mkdir -p /app/data /app/data/gallery-images
-chown -R www-data:www-data /app/data
+mkdir -p /app/data /app/data/gallery-images /var/log/nginx /var/run/nginx /run
+chown -R nobody:nogroup /app/data
 chmod 775 /app/data
 mkdir -p /tmp/nginx-client-body
 chown -R nobody:nogroup /tmp/nginx-client-body 2>/dev/null || true
@@ -58,9 +58,9 @@ if [ ! -f /app/data/lottery.json ]; then
     echo '{"current":null,"history":[],"countdown":null,"exportedAt":0}' > /app/data/lottery.json
 fi
 
-chown www-data:www-data /app/data/*.json
+chown nobody:nogroup /app/data/*.json
 chmod 664 /app/data/*.json
-chown -R www-data:www-data /app/data/gallery-images
+chown -R nobody:nogroup /app/data/gallery-images
 chmod 775 /app/data/gallery-images
 
 # 启动PHP-FPM
