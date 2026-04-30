@@ -9,7 +9,7 @@ COPY . /app
 WORKDIR /app
 
 # 创建data目录
-RUN mkdir -p /app/data && chown -R www-data:www-data /app/data && chmod 775 /app/data
+RUN mkdir -p /app/data /app/data/gallery-images && chown -R www-data:www-data /app/data && chmod 775 /app/data /app/data/gallery-images
 
 # 初始化JSON文件
 RUN echo '[]' > /app/data/gallery.json && \

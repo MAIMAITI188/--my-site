@@ -2,7 +2,7 @@
 set -e
 
 # 确保data目录存在且有写入权限
-mkdir -p /app/data
+mkdir -p /app/data /app/data/gallery-images
 chown -R www-data:www-data /app/data
 chmod 775 /app/data
 
@@ -57,6 +57,8 @@ fi
 
 chown www-data:www-data /app/data/*.json
 chmod 664 /app/data/*.json
+chown -R www-data:www-data /app/data/gallery-images
+chmod 775 /app/data/gallery-images
 
 # 启动PHP-FPM
 php-fpm -y /app/php-fpm.conf &

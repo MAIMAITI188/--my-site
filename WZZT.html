@@ -392,7 +392,7 @@ function normalizeImageSrc(value){
     return clean;
   }
 
-  if((clean.startsWith("images/gallery/") || clean.startsWith("./images/gallery/")) && !clean.includes("..")){
+  if((clean.startsWith("images/gallery/") || clean.startsWith("./images/gallery/") || clean.startsWith("data/gallery-images/") || clean.startsWith("./data/gallery-images/")) && !clean.includes("..")){
     return /^[a-z0-9/_\-.%]+$/i.test(clean) ? clean : "";
   }
 

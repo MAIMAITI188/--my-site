@@ -38,7 +38,7 @@ function valid_image($value): bool {
     if (preg_match('/^https?:\/\//i', $value) === 1) {
         return true;
     }
-    return preg_match('/^(?:\.\/)?images\/gallery\/[A-Za-z0-9_\/.%-]+$/', $value) === 1
+    return preg_match('/^(?:\.\/)?(?:images\/gallery|data\/gallery-images)\/[A-Za-z0-9_\/.%-]+$/', $value) === 1
         && strpos($value, '..') === false;
 }
 
