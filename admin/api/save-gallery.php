@@ -59,6 +59,27 @@ function valid_link($value): bool {
     return preg_match('/^(https?:\/\/|\/(?!\/)|\.\/|#)/i', $value) === 1;
 }
 
+function local_image_path(string $value): string {
+    $clean = preg_replace('/^\.\//', '', trim(str_replace('\\', '/', $value)));
+    if ($clean === '' || strpos($clean, '..') !== false) {
+        return '';
+    }
+    if (strpos($clean, 'images/gallery/') === 0 || strpos($clean, 'data/gallery-images/') === 0) {
+        return $clean;
+    }
+    return '';
+}
+
+function local_image_exists(string $baseDir, string $value): bool {
+    $relative = local_image_path($value);
+    if ($relative === '') {
+        return true;
+    }
+
+    $path = $baseDir . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relative);
+    return is_file($path);
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     respond(405, ['ok' => false, 'error' => 'method_not_allowed']);
 }
@@ -81,6 +102,11 @@ if (!is_array($items)) {
     respond(400, ['ok' => false, 'error' => 'invalid_json']);
 }
 
+$root = realpath(__DIR__ . '/../..');
+if ($root === false || !is_dir($root)) {
+    respond(500, ['ok' => false, 'error' => 'root_directory_missing']);
+}
+
 $clean = [];
 foreach ($items as $item) {
     if (!is_assoc_array($item)) {
@@ -96,6 +122,13 @@ foreach ($items as $item) {
 
     if (!valid_text($title, 200) || !valid_image($image) || !valid_optional_image($thumb) || !valid_link($link)) {
         respond(422, ['ok' => false, 'error' => 'invalid_gallery_item']);
+    }
+    if (!local_image_exists($root, $image) || ($thumb !== '' && !local_image_exists($root, $thumb))) {
+        respond(422, [
+            'ok' => false,
+            'error' => 'missing_gallery_image_file',
+            'message' => 'One or more gallery image files do not exist on the server. Re-upload the image before syncing.'
+        ]);
     }
 
     $clean[] = [

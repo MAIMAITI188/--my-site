@@ -171,6 +171,12 @@ body{
   line-height:1.6;
 }
 
+.gallery-placeholder.is-error{
+  border:1px dashed #e6b4a8;
+  background:#fff4f1;
+  color:#b24b39;
+}
+
 .gallery-placeholder.is-hidden{
   display:none;
 }
@@ -520,10 +526,9 @@ function handleGalleryImageError(image){
     return;
   }
 
-  image.style.display = "none";
-  var card = image.closest ? image.closest(".gallery-card") : closestElement(image, ".gallery-card");
-  if(card && card.parentNode){
-    card.parentNode.removeChild(card);
+  var media = image.parentNode;
+  if(media){
+    media.innerHTML = '<div class="gallery-placeholder is-error">图片文件不存在<br>请在后台重新上传并同步</div>';
   }
   if(!gallery.querySelector(".gallery-card")){
     renderEmpty("图库图片暂时无法显示。<br>请在后台重新上传图片并同步服务器。");
