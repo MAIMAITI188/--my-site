@@ -142,7 +142,8 @@ input{
 .preview-ball.blue{background:linear-gradient(145deg,#48a6ff,#0052c8)}
 .preview-ball.green{background:linear-gradient(145deg,#20d842,#0a9b27)}
 
-.row.invalid .num-input{
+.row.invalid .num-input,
+.row.duplicate .num-input{
   outline:2px solid #f87171;
 }
 
@@ -586,7 +587,7 @@ body.auth-locked .auth-screen{
     <button class="module-btn" type="button" onclick="saveCountdownSettings()">单独保存倒计时</button>
   </div>
 
-  <div class="hint">填写 01-49 的号码后，系统会自动匹配波色、五行和生肖。保存后首页会自动更新。</div>
+  <div class="hint">填写 01-49 的号码后，系统会自动匹配波色、五行和生肖；7 个号码不能重复。保存后首页会自动更新。</div>
 
   <div class="edit-banner" id="editBanner">
     <div id="editBannerText">正在编辑历史记录</div>
@@ -764,6 +765,30 @@ function getNumberInfo(value){
 
   const key = String(number).padStart(2, "0");
   return { key, ...numberMap[key] };
+}
+
+function getDuplicateNumberKeys(){
+  const counts = {};
+
+  for(let i = 1; i <= 7; i++){
+    const info = getNumberInfo(document.getElementById("num" + i).value);
+    if(!info) continue;
+    counts[info.key] = (counts[info.key] || 0) + 1;
+  }
+
+  return new Set(Object.keys(counts).filter(key => counts[key] > 1));
+}
+
+function refreshDuplicateRows(){
+  const duplicates = getDuplicateNumberKeys();
+
+  for(let i = 1; i <= 7; i++){
+    const row = document.getElementById("row" + i);
+    const info = getNumberInfo(document.getElementById("num" + i).value);
+    row.classList.toggle("duplicate", Boolean(info && duplicates.has(info.key)));
+  }
+
+  return duplicates;
 }
 
 function noteText(info){
@@ -1154,13 +1179,14 @@ function syncRow(i, format = false){
   const info = getNumberInfo(cleaned);
 
   preview.className = "preview-ball";
-  row.classList.remove("invalid");
+  row.classList.remove("invalid", "duplicate");
 
   if(!info){
     noteInput.value = "";
     colorInput.value = "";
     colorOutput.value = "";
     preview.innerText = "--";
+    refreshDuplicateRows();
 
     if(cleaned){
       row.classList.add("invalid");
@@ -1180,13 +1206,15 @@ function syncRow(i, format = false){
   colorOutput.value = colorText[info.color];
   preview.classList.add(info.color);
   preview.innerText = info.key;
-  message.innerText = "";
+  const duplicates = refreshDuplicateRows();
+  message.innerText = duplicates.size ? "号码不能重复，请修改标红的号码" : "";
 
   return info;
 }
 
 function save(){
   const items = [];
+  const seenNumbers = new Set();
 
   for(let i = 1; i <= 7; i++){
     const info = syncRow(i, true);
@@ -1197,6 +1225,14 @@ function save(){
       numInput.focus();
       return;
     }
+
+    if(seenNumbers.has(info.key)){
+      refreshDuplicateRows();
+      message.innerText = `号码 ${info.key} 重复，请修改后再保存`;
+      numInput.focus();
+      return;
+    }
+    seenNumbers.add(info.key);
 
     items.push({
       num: info.key,
