@@ -108,6 +108,7 @@ if ($root === false || !is_dir($root)) {
 }
 
 $clean = [];
+$missingImages = [];
 foreach ($items as $item) {
     if (!is_assoc_array($item)) {
         respond(422, ['ok' => false, 'error' => 'invalid_gallery_item']);
@@ -123,12 +124,19 @@ foreach ($items as $item) {
     if (!valid_text($title, 200) || !valid_image($image) || !valid_optional_image($thumb) || !valid_link($link)) {
         respond(422, ['ok' => false, 'error' => 'invalid_gallery_item']);
     }
-    if (!local_image_exists($root, $image) || ($thumb !== '' && !local_image_exists($root, $thumb))) {
-        respond(422, [
-            'ok' => false,
-            'error' => 'missing_gallery_image_file',
-            'message' => 'One or more gallery image files do not exist on the server. Re-upload the image before syncing.'
-        ]);
+    if (!local_image_exists($root, $image)) {
+        $missingImages[] = [
+            'title' => $title,
+            'field' => 'image',
+            'path' => local_image_path($image)
+        ];
+    }
+    if ($thumb !== '' && !local_image_exists($root, $thumb)) {
+        $missingImages[] = [
+            'title' => $title,
+            'field' => 'thumb',
+            'path' => local_image_path($thumb)
+        ];
     }
 
     $clean[] = [
@@ -162,4 +170,11 @@ if (!rename($temp, $file)) {
     respond(500, ['ok' => false, 'error' => 'rename_failed']);
 }
 
-respond(200, ['ok' => true, 'file' => 'data/gallery.json']);
+$payload = ['ok' => true, 'file' => 'data/gallery.json'];
+if ($missingImages !== []) {
+    $payload['warnings'] = [
+        'missing_gallery_image_file' => $missingImages
+    ];
+}
+
+respond(200, $payload);
