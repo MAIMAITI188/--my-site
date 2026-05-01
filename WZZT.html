@@ -109,17 +109,18 @@ body{
 }
 
 .gallery{
-  display:block;
-  column-count:2;
-  column-gap:16px;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-start;
+  gap:16px;
   padding:0 var(--site-gap) 26px;
 }
 
 .gallery-card{
-  display:inline-block;
-  width:100%;
+  display:block;
+  width:calc((100% - 16px) / 2);
   min-width:0;
-  margin:0 0 16px;
+  margin:0;
   break-inside:avoid;
   page-break-inside:avoid;
   vertical-align:top;
@@ -173,6 +174,7 @@ body{
 
 .empty-box{
   column-span:all;
+  width:100%;
   padding:26px 18px;
   border:1px dashed #caddce;
   border-radius:14px;
@@ -315,11 +317,12 @@ body{
     font-size:18px;
   }
   .gallery{
-    column-count:2;
-    column-gap:12px;
+    gap:12px;
     padding:0 var(--site-gap) 18px;
   }
-  .gallery-card{margin-bottom:12px}
+  .gallery-card{
+    width:calc((100% - 12px) / 2);
+  }
   .gallery-placeholder{
     min-height:88px;
     padding:14px 8px;
@@ -526,7 +529,7 @@ function buildCard(item){
   const linkHref = normalizeLinkHref(item.link);
   const image = sources.original ? `
     <div class="gallery-media">
-      <img class="gallery-image" src="${escapeHtml(sources.thumb)}" data-original="${escapeHtml(sources.original)}" alt="${title}" loading="lazy" onerror="handleGalleryImageError(this)">
+      <img class="gallery-image" src="${escapeHtml(sources.thumb)}" data-original="${escapeHtml(sources.original)}" alt="${title}" loading="eager" decoding="async" onerror="handleGalleryImageError(this)">
     </div>
   ` : `
     <div class="gallery-placeholder">这条数据还没有填写图片路径</div>

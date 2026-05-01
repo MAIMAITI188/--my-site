@@ -16,8 +16,8 @@ WORKDIR /app
 RUN mkdir -p /app/data /app/data/gallery-images /app/data/gallery-images/original /app/data/gallery-images/thumbs && chown -R www-data:www-data /app/data && chmod 775 /app/data /app/data/gallery-images /app/data/gallery-images/original /app/data/gallery-images/thumbs
 
 # 初始化JSON文件
-RUN echo '[]' > /app/data/gallery.json && \
-    echo '{"current":null,"history":[],"countdown":null,"exportedAt":0}' > /app/data/lottery.json && \
+RUN if [ ! -f /app/data/gallery.json ]; then echo '[]' > /app/data/gallery.json; fi && \
+    if [ ! -f /app/data/lottery.json ]; then echo '{"current":null,"history":[],"countdown":null,"exportedAt":0}' > /app/data/lottery.json; fi && \
     chown -R www-data:www-data /app/data && \
     chmod 664 /app/data/*.json
 
