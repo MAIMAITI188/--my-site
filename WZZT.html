@@ -109,19 +109,22 @@ body{
 }
 
 .gallery{
-  display:flex;
-  flex-wrap:wrap;
-  align-items:flex-start;
-  gap:16px;
+  display:block;
+  -webkit-column-count:2;
+  column-count:2;
+  -webkit-column-gap:16px;
+  column-gap:16px;
   padding:0 var(--site-gap) 26px;
 }
 
 .gallery-card{
-  display:block;
-  width:calc((100% - 16px) / 2);
+  display:inline-block;
+  width:100%;
   min-width:0;
-  margin:0;
+  margin:0 0 16px;
+  -webkit-column-break-inside:avoid;
   break-inside:avoid;
+  break-inside:avoid-column;
   page-break-inside:avoid;
   vertical-align:top;
   background:#fff;
@@ -317,12 +320,13 @@ body{
     font-size:18px;
   }
   .gallery{
-    gap:12px;
+    -webkit-column-count:2;
+    column-count:2;
+    -webkit-column-gap:12px;
+    column-gap:12px;
     padding:0 var(--site-gap) 18px;
   }
-  .gallery-card{
-    width:calc((100% - 12px) / 2);
-  }
+  .gallery-card{margin-bottom:12px}
   .gallery-placeholder{
     min-height:88px;
     padding:14px 8px;
@@ -402,20 +406,19 @@ function backMainPage(){
   window.scrollTo(0,0);
 }
 
-const pageParams = new URLSearchParams(window.location.search);
-if(pageParams.has("demo")){
+if(/[?&]demo(?:=|&|$)/.test(window.location.search)){
   document.getElementById("lotteryFrame").src = "index.html?embed=1&demo=1";
 }
 
-const gallery = document.getElementById("gallery");
-const lightbox = document.getElementById("lightbox");
-const lightboxImage = document.getElementById("lightboxImage");
-const lightboxClose = document.getElementById("lightboxClose");
-const lightboxOpen = document.getElementById("lightboxOpen");
-const SAFE_IMAGE_DATA_RE = /^data:image\/(?:png|jpe?g|webp|gif);base64,/i;
+var gallery = document.getElementById("gallery");
+var lightbox = document.getElementById("lightbox");
+var lightboxImage = document.getElementById("lightboxImage");
+var lightboxClose = document.getElementById("lightboxClose");
+var lightboxOpen = document.getElementById("lightboxOpen");
+var SAFE_IMAGE_DATA_RE = /^data:image\/(?:png|jpe?g|webp|gif);base64,/i;
 
 function escapeHtml(value){
-  return String(value ?? "")
+  return String(value == null ? "" : value)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
@@ -428,7 +431,7 @@ function hasUnsafeUrlChars(value){
 }
 
 function normalizeImageSrc(value){
-  const clean = String(value || "").trim().replace(/\\/g, "/");
+  var clean = String(value || "").trim().replace(/\\/g, "/");
   if(!clean || hasUnsafeUrlChars(clean)){
     return "";
   }
@@ -441,7 +444,7 @@ function normalizeImageSrc(value){
     return clean;
   }
 
-  if((clean.startsWith("images/gallery/") || clean.startsWith("./images/gallery/") || clean.startsWith("data/gallery-images/") || clean.startsWith("./data/gallery-images/")) && !clean.includes("..")){
+  if((clean.indexOf("images/gallery/") === 0 || clean.indexOf("./images/gallery/") === 0 || clean.indexOf("data/gallery-images/") === 0 || clean.indexOf("./data/gallery-images/") === 0 || clean.indexOf("/data/gallery-images/") === 0) && clean.indexOf("..") === -1){
     return /^[a-z0-9/_\-.%]+$/i.test(clean) ? clean : "";
   }
 
@@ -449,22 +452,23 @@ function normalizeImageSrc(value){
 }
 
 function getGalleryImageSources(item){
-  const original = normalizeImageSrc(item?.image);
-  const thumb = normalizeImageSrc(item?.thumb) || original;
+  item = item || {};
+  var original = normalizeImageSrc(item.image);
+  var thumb = normalizeImageSrc(item.thumb) || original;
   return { original, thumb };
 }
 
 function normalizeLinkHref(value){
-  const clean = String(value || "").trim();
+  var clean = String(value || "").trim();
   if(!clean || hasUnsafeUrlChars(clean)){
     return "";
   }
 
-  if(/^https?:\/\//i.test(clean) || clean.startsWith("#") || clean.startsWith("./")){
+  if(/^https?:\/\//i.test(clean) || clean.indexOf("#") === 0 || clean.indexOf("./") === 0){
     return clean;
   }
 
-  if(clean.startsWith("/") && !clean.startsWith("//")){
+  if(clean.indexOf("/") === 0 && clean.indexOf("//") !== 0){
     return clean;
   }
 
@@ -496,7 +500,7 @@ function closeLightbox(){
 }
 
 function renderEmpty(message){
-  gallery.innerHTML = `<div class="empty-box">${message}</div>`;
+  gallery.innerHTML = '<div class="empty-box">' + message + '</div>';
 }
 
 function sameImageUrl(left, right){
@@ -508,76 +512,126 @@ function sameImageUrl(left, right){
 }
 
 function handleGalleryImageError(image){
-  const original = image.dataset.original || "";
-  const triedOriginal = image.dataset.triedOriginal === "1";
+  var original = image.getAttribute("data-original") || "";
+  var triedOriginal = image.getAttribute("data-tried-original") === "1";
   if(original && !sameImageUrl(image.src, original) && !triedOriginal){
-    image.dataset.triedOriginal = "1";
+    image.setAttribute("data-tried-original", "1");
     image.src = original;
     return;
   }
 
   image.style.display = "none";
-  image.closest(".gallery-card")?.remove();
+  var card = image.closest ? image.closest(".gallery-card") : closestElement(image, ".gallery-card");
+  if(card && card.parentNode){
+    card.parentNode.removeChild(card);
+  }
   if(!gallery.querySelector(".gallery-card")){
     renderEmpty("图库图片暂时无法显示。<br>请在后台重新上传图片并同步服务器。");
   }
 }
 
 function buildCard(item){
-  const title = escapeHtml(item.title || "未命名图片");
-  const sources = getGalleryImageSources(item);
-  const linkHref = normalizeLinkHref(item.link);
-  const image = sources.original ? `
-    <div class="gallery-media">
-      <img class="gallery-image" src="${escapeHtml(sources.thumb)}" data-original="${escapeHtml(sources.original)}" alt="${title}" loading="eager" decoding="async" onerror="handleGalleryImageError(this)">
-    </div>
-  ` : `
-    <div class="gallery-placeholder">这条数据还没有填写图片路径</div>
-  `;
+  var title = escapeHtml(item.title || "未命名图片");
+  var sources = getGalleryImageSources(item);
+  var linkHref = normalizeLinkHref(item.link);
+  var image = sources.original
+    ? '<div class="gallery-media"><img class="gallery-image" src="' + escapeHtml(sources.thumb) + '" data-original="' + escapeHtml(sources.original) + '" alt="' + title + '" loading="eager" decoding="async" onerror="handleGalleryImageError(this)"></div>'
+    : '<div class="gallery-placeholder">这条数据还没有填写图片路径</div>';
 
   if(linkHref){
-    return `<a class="gallery-card" href="${escapeHtml(linkHref)}" target="_blank" rel="noopener noreferrer">${image}</a>`;
+    return '<a class="gallery-card" href="' + escapeHtml(linkHref) + '" target="_blank" rel="noopener noreferrer">' + image + '</a>';
   }
 
-  return `<div class="gallery-card">${image}</div>`;
+  return '<div class="gallery-card">' + image + '</div>';
 }
 
-async function loadGallery(){
+function renderGalleryItems(items){
+  if(!Array.isArray(items)){
+    renderEmpty("图库数据读取失败。<br>请检查 <code>data/gallery.json</code> 是否存在，或 JSON 格式是否正确。");
+    return;
+  }
+
+  var list = items
+    .filter(function(item){ return item && item.enabled !== false; })
+    .sort(function(a, b){ return Number(b.sort || 0) - Number(a.sort || 0); });
+
+  if(!list.length){
+    renderEmpty("图库目前还没有图片。");
+    return;
+  }
+
+  gallery.innerHTML = list.map(function(item){ return buildCard(item); }).join("");
+}
+
+function fetchGalleryJson(done){
+  if(window.fetch){
+    fetch("data/gallery.json", { cache:"no-store" })
+      .then(function(response){
+        if(!response.ok){
+          throw new Error("HTTP " + response.status);
+        }
+        return response.json();
+      })
+      .then(done)
+      .catch(function(){
+        done(null);
+      });
+    return;
+  }
+
+  var request = new XMLHttpRequest();
+  request.open("GET", "data/gallery.json?t=" + Date.now(), true);
+  request.onreadystatechange = function(){
+    if(request.readyState !== 4){
+      return;
+    }
+
+    if(request.status < 200 || request.status >= 300){
+      done(null);
+      return;
+    }
+
+    try{
+      done(JSON.parse(request.responseText));
+    }catch(error){
+      done(null);
+    }
+  };
+  request.send();
+}
+
+function loadGallery(){
   if(window.location.protocol === "file:"){
     renderEmpty("你现在是直接双击打开页面。<br>这种方式通常读不出 <code>data/gallery.json</code>。<br>请用本地服务器预览，或者部署上线后再看。");
     return;
   }
 
-  try{
-    const response = await fetch("data/gallery.json", { cache:"no-store" });
-    if(!response.ok){
-      throw new Error("HTTP " + response.status);
-    }
-
-    const items = await response.json();
-    if(!Array.isArray(items)){
-      throw new Error("gallery.json 不是数组");
-    }
-
-    const list = items
-      .filter(item => item && item.enabled !== false)
-      .sort((a, b) => Number(b.sort || 0) - Number(a.sort || 0));
-
-    if(!list.length){
-      renderEmpty("图库目前还没有图片。");
+  fetchGalleryJson(function(items){
+    if(!items){
+      renderEmpty("图库数据读取失败。<br>请检查 <code>data/gallery.json</code> 是否存在，或 JSON 格式是否正确。");
       return;
     }
 
-    gallery.innerHTML = list.map(buildCard).join("");
-  }catch(error){
-    renderEmpty("图库数据读取失败。<br>请检查 <code>data/gallery.json</code> 是否存在，或 JSON 格式是否正确。");
+    renderGalleryItems(items);
+  });
+}
+
+function closestElement(start, selector){
+  var node = start;
+  while(node && node !== document){
+    var matches = node.matches || node.msMatchesSelector || node.webkitMatchesSelector;
+    if(matches && matches.call(node, selector)){
+      return node;
+    }
+    node = node.parentNode;
   }
+  return null;
 }
 
 loadGallery();
 
-gallery.addEventListener("click", event => {
-  const image = event.target.closest(".gallery-image");
+gallery.addEventListener("click", function(event){
+  var image = closestElement(event.target, ".gallery-image");
   if(!image){
     return;
   }
@@ -586,34 +640,34 @@ gallery.addEventListener("click", event => {
   openLightbox(image.currentSrc || image.src, image.alt);
 });
 
-lightboxImage.addEventListener("error", () => {
+lightboxImage.addEventListener("error", function(){
   lightboxImage.classList.add("is-hidden");
   closeLightbox();
 });
 
-lightbox.addEventListener("click", event => {
+lightbox.addEventListener("click", function(event){
   if(event.target === lightbox || event.target === lightboxClose){
     closeLightbox();
   }
 });
 
-lightboxOpen.addEventListener("click", event => {
+lightboxOpen.addEventListener("click", function(event){
   event.preventDefault();
   event.stopPropagation();
-  const href = lightboxOpen.getAttribute("href");
+  var href = lightboxOpen.getAttribute("href");
   if(href && href !== "#"){
     window.location.href = href;
   }
 });
 
-lightboxImage.addEventListener("click", event => {
+lightboxImage.addEventListener("click", function(event){
   event.stopPropagation();
   if(lightboxImage.src){
     window.location.href = lightboxImage.src;
   }
 });
 
-document.addEventListener("keydown", event => {
+document.addEventListener("keydown", function(event){
   if(event.key === "Escape" && lightbox.classList.contains("is-open")){
     closeLightbox();
   }
