@@ -253,6 +253,10 @@ body{
   cursor:zoom-in;
 }
 
+.lightbox-image.is-hidden{
+  display:none;
+}
+
 .lightbox-close{
   position:absolute;
   top:18px;
@@ -469,6 +473,7 @@ function openLightbox(src, alt){
     return;
   }
 
+  lightboxImage.classList.remove("is-hidden");
   lightboxImage.src = src;
   lightboxImage.alt = alt || "";
   lightboxOpen.href = src;
@@ -480,6 +485,7 @@ function openLightbox(src, alt){
 function closeLightbox(){
   lightbox.classList.remove("is-open");
   lightbox.setAttribute("aria-hidden", "true");
+  lightboxImage.classList.remove("is-hidden");
   lightboxImage.removeAttribute("src");
   lightboxImage.alt = "";
   lightboxOpen.href = "#";
@@ -490,10 +496,18 @@ function renderEmpty(message){
   gallery.innerHTML = `<div class="empty-box">${message}</div>`;
 }
 
+function sameImageUrl(left, right){
+  try{
+    return new URL(left, window.location.href).href === new URL(right, window.location.href).href;
+  }catch(error){
+    return left === right;
+  }
+}
+
 function handleGalleryImageError(image){
   const original = image.dataset.original || "";
   const triedOriginal = image.dataset.triedOriginal === "1";
-  if(original && image.src !== original && !triedOriginal){
+  if(original && !sameImageUrl(image.src, original) && !triedOriginal){
     image.dataset.triedOriginal = "1";
     image.src = original;
     return;
@@ -501,6 +515,9 @@ function handleGalleryImageError(image){
 
   image.style.display = "none";
   image.closest(".gallery-card")?.remove();
+  if(!gallery.querySelector(".gallery-card")){
+    renderEmpty("图库图片暂时无法显示。<br>请在后台重新上传图片并同步服务器。");
+  }
 }
 
 function buildCard(item){
@@ -510,7 +527,6 @@ function buildCard(item){
   const image = sources.original ? `
     <div class="gallery-media">
       <img class="gallery-image" src="${escapeHtml(sources.thumb)}" data-original="${escapeHtml(sources.original)}" alt="${title}" loading="lazy" onerror="handleGalleryImageError(this)">
-      <div class="gallery-placeholder is-hidden">图片文件不存在<br>请检查图片路径</div>
     </div>
   ` : `
     <div class="gallery-placeholder">这条数据还没有填写图片路径</div>
@@ -564,7 +580,12 @@ gallery.addEventListener("click", event => {
   }
 
   event.preventDefault();
-  openLightbox(image.dataset.original || image.currentSrc || image.src, image.alt);
+  openLightbox(image.currentSrc || image.src, image.alt);
+});
+
+lightboxImage.addEventListener("error", () => {
+  lightboxImage.classList.add("is-hidden");
+  closeLightbox();
 });
 
 lightbox.addEventListener("click", event => {
