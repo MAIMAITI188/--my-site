@@ -672,6 +672,7 @@ const historyClose = document.getElementById("historyClose");
 const historyList = document.getElementById("historyList");
 const URL_PARAMS = new URLSearchParams(window.location.search);
 const IS_DEMO_MODE = URL_PARAMS.has("demo");
+const ANIMATION_END_BUFFER_MS = 3000;
 const DEMO_LOTTERY_DATA = {
   period:"2026001",
   nextTime:"2026-05-01 21:30",
@@ -891,6 +892,36 @@ function getCountdownTimestamp(data){
   return NaN;
 }
 
+function stopAnimationAndShowStatic(data){
+  clearAnimationTimers();
+  isPlaying = false;
+  localStorage.removeItem(ANIMATION_STATE_KEY);
+  if(data && Array.isArray(data.items) && data.items.length){
+    renderStatic(data);
+  }
+}
+
+function getUpdateAnimationState(data){
+  const startedAt = dataTimestamp(data);
+  const duration = animationTotalDuration(data);
+
+  if(!Number.isFinite(startedAt) || startedAt <= 0 || duration <= 0){
+    localStorage.removeItem(ANIMATION_STATE_KEY);
+    return null;
+  }
+
+  const elapsed = Date.now() - startedAt;
+  if(!Number.isFinite(elapsed) || elapsed < 0 || elapsed >= duration + ANIMATION_END_BUFFER_MS){
+    localStorage.removeItem(ANIMATION_STATE_KEY);
+    return null;
+  }
+
+  return {
+    elapsed: Math.min(elapsed, duration),
+    isFinished: elapsed >= duration
+  };
+}
+
 function updateCountdown(){
   const countdownData = getCountdownLotteryData();
   const countdownTimestamp = getCountdownTimestamp(countdownData);
@@ -1052,39 +1083,6 @@ function animationTotalDuration(data){
   return total;
 }
 
-function saveAnimationState(data){
-  const key = lotteryKey(data);
-  if(!key) return;
-  localStorage.setItem(ANIMATION_STATE_KEY, JSON.stringify({
-    key,
-    startedAt:Date.now(),
-    duration:animationTotalDuration(data)
-  }));
-}
-
-function loadAnimationState(data){
-  const state = loadJson(ANIMATION_STATE_KEY, null);
-  const duration = animationTotalDuration(data);
-
-  if(state && state.key === lotteryKey(data)){
-    const startedAt = Number(state.startedAt || 0);
-    const savedDuration = Number(state.duration || duration);
-    const elapsed = Date.now() - startedAt;
-    if(Number.isFinite(elapsed) && elapsed >= 0 && elapsed < savedDuration){
-      return { elapsed };
-    }
-    localStorage.removeItem(ANIMATION_STATE_KEY);
-  }
-
-  const serverStartedAt = dataTimestamp(data);
-  const serverElapsed = Date.now() - serverStartedAt;
-  if(Number.isFinite(serverElapsed) && serverElapsed >= 0 && serverElapsed < duration){
-    return { elapsed:serverElapsed };
-  }
-
-  return null;
-}
-
 function clearAnimationTimers(){
   if(timer){
     clearInterval(timer);
@@ -1162,7 +1160,6 @@ function setHeader(data){
 }
 
 function play(data){
-  saveAnimationState(data);
   playFrom(data, 0, 0);
 }
 
@@ -1256,9 +1253,13 @@ function load(){
   const now = String(data.updateTime || "");
   setHeader(data);
 
-  const animationState = loadAnimationState(data);
+  const animationState = getUpdateAnimationState(data);
   if(animationState){
     lastUpdateTime = now;
+    if(animationState.isFinished){
+      stopAnimationAndShowStatic(data);
+      return;
+    }
     if(!isPlaying && resumeAnimation(data, animationState.elapsed)){
       return;
     }
@@ -1281,7 +1282,13 @@ function load(){
   }
 
   lastUpdateTime = now;
-  play(data);
+  const updateAnimationState = getUpdateAnimationState(data);
+  if(updateAnimationState && !updateAnimationState.isFinished){
+    play(data);
+    return;
+  }
+
+  stopAnimationAndShowStatic(data);
 }
 
 load();
