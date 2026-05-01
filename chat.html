@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>聊天室测试</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#edf2f0;color:#163326;font-family:Arial,"Microsoft YaHei",sans-serif}
+.chat-app{max-width:640px;min-height:100vh;margin:0 auto;display:flex;flex-direction:column;background:#f8fbf9}
+.chat-head{padding:14px 16px;background:#10a95b;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.chat-title{margin:0;font-size:21px;line-height:1.2}
+.chat-subtitle{margin-top:4px;font-size:13px;opacity:.86}
+.chat-list{flex:1;overflow:auto;padding:14px 12px 18px}
+.message{margin:0 0 10px;padding:10px 12px;border-radius:10px;background:#fff;border:1px solid #dfece5;box-shadow:0 2px 8px rgba(10,60,35,.05)}
+.message-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;color:#5c7567;font-size:12px}
+.message-name{color:#0b8a49;font-weight:bold;font-size:14px}
+.message-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.48;font-size:15px}
+.chat-empty,.chat-error{margin:20px 0;padding:18px;border:1px dashed #b9d2c4;border-radius:12px;text-align:center;color:#6c8377;background:#fff}
+.chat-error{color:#a33232;border-color:#edc3c3}
+.chat-form{padding:12px;background:#fff;border-top:1px solid #dcebe3}
+.form-row{display:grid;grid-template-columns:120px 1fr auto;gap:8px}
+.chat-input,.chat-text{width:100%;border:1px solid #c8dbd1;border-radius:9px;background:#f9fcfa;color:#163326;font:inherit;outline:none}
+.chat-input{height:42px;padding:0 11px}
+.chat-text{min-height:42px;max-height:110px;padding:10px 11px;resize:vertical}
+.send-btn{height:42px;min-width:74px;border:0;border-radius:9px;background:#10a95b;color:#fff;font-size:15px;font-weight:bold;cursor:pointer}
+.send-btn:disabled{opacity:.58;cursor:not-allowed}
+.status{min-height:18px;margin-top:8px;color:#6b7f72;font-size:12px}
+.status.is-error{color:#bb2d2d}
+@media(max-width:520px){
+  .chat-head{padding:12px}
+  .chat-title{font-size:19px}
+  .chat-list{padding:12px 10px 14px}
+  .chat-form{padding:10px}
+  .form-row{grid-template-columns:1fr auto}
+  .chat-input{grid-column:1 / -1}
+}
+</style>
+</head>
+<body>
+<main class="chat-app">
+  <header class="chat-head">
+    <h1 class="chat-title">聊天室测试</h1>
+    <div class="chat-subtitle">轻量留言版，每 3 秒自动刷新</div>
+  </header>
+  <section class="chat-list" id="chatList" aria-live="polite">
+    <div class="chat-empty">正在读取消息...</div>
+  </section>
+  <form class="chat-form" id="chatForm" autocomplete="off">
+    <div class="form-row">
+      <input class="chat-input" id="nameInput" maxlength="18" placeholder="昵称" required>
+      <textarea class="chat-text" id="messageInput" maxlength="300" placeholder="输入消息" required></textarea>
+      <button class="send-btn" id="sendBtn" type="submit">发送</button>
+    </div>
+    <div class="status" id="statusText"></div>
+  </form>
+</main>
+<script>
+const CHAT_API = "api/chat.php";
+const chatList = document.getElementById("chatList");
+const chatForm = document.getElementById("chatForm");
+const nameInput = document.getElementById("nameInput");
+const messageInput = document.getElementById("messageInput");
+const sendBtn = document.getElementById("sendBtn");
+const statusText = document.getElementById("statusText");
+let lastMessageId = "";
+let loading = false;
+
+nameInput.value = localStorage.getItem("chat_name") || "";
+
+function escapeHtml(value){
+  return String(value ?? "")
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
+    .replace(/'/g,"&#39;");
+}
+
+function formatTime(timestamp){
+  const date = new Date(Number(timestamp));
+  if(Number.isNaN(date.getTime())) return "";
+  return `${String(date.getHours()).padStart(2,"0")}:${String(date.getMinutes()).padStart(2,"0")}`;
+}
+
+function setStatus(message,isError=false){
+  statusText.textContent = message || "";
+  statusText.classList.toggle("is-error", Boolean(isError));
+}
+
+function renderMessages(messages){
+  if(!Array.isArray(messages) || !messages.length){
+    chatList.innerHTML = `<div class="chat-empty">还没有消息，发第一条试试。</div>`;
+    return;
+  }
+  chatList.innerHTML = messages.map(item => `
+    <article class="message">
+      <div class="message-meta">
+        <span class="message-name">${escapeHtml(item.name || "游客")}</span>
+        <time>${escapeHtml(formatTime(item.createdAt))}</time>
+      </div>
+      <div class="message-text">${escapeHtml(item.text || "")}</div>
+    </article>
+  `).join("");
+}
+
+async function loadMessages(forceScroll=false){
+  if(loading) return;
+  loading = true;
+  try{
+    const response = await fetch(`${CHAT_API}?v=${Date.now()}`, { cache:"no-store" });
+    if(!response.ok) throw new Error("HTTP " + response.status);
+    const data = await response.json();
+    const messages = Array.isArray(data.messages) ? data.messages : [];
+    const newest = messages.length ? String(messages[messages.length - 1].id || "") : "";
+    const shouldScroll = forceScroll || newest !== lastMessageId;
+    lastMessageId = newest;
+    renderMessages(messages);
+    if(shouldScroll) chatList.scrollTop = chatList.scrollHeight;
+  }catch(error){
+    chatList.innerHTML = `<div class="chat-error">聊天室读取失败，请稍后刷新。</div>`;
+  }finally{
+    loading = false;
+  }
+}
+
+chatForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  const name = nameInput.value.trim() || "游客";
+  const text = messageInput.value.trim();
+  if(!text){
+    setStatus("消息不能为空。", true);
+    return;
+  }
+  sendBtn.disabled = true;
+  setStatus("发送中...");
+  try{
+    const response = await fetch(CHAT_API, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({ name, text })
+    });
+    const result = await response.json().catch(() => ({}));
+    if(!response.ok || !result.ok) throw new Error(result.error || "send_failed");
+    localStorage.setItem("chat_name", name);
+    messageInput.value = "";
+    setStatus("已发送。");
+    await loadMessages(true);
+  }catch(error){
+    const tooFast = String(error.message || "").includes("too_many_requests");
+    setStatus(tooFast ? "发送太快了，等几秒再试。" : "发送失败，请稍后再试。", true);
+  }finally{
+    sendBtn.disabled = false;
+    messageInput.focus();
+  }
+});
+
+loadMessages(true);
+setInterval(loadMessages, 3000);
+</script>
+</body>
+</html>

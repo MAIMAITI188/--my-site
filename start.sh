@@ -58,6 +58,10 @@ if [ ! -f /app/data/lottery.json ]; then
     echo '{"current":null,"history":[],"countdown":null,"exportedAt":0}' > /app/data/lottery.json
 fi
 
+if [ ! -f /app/data/chat.json ]; then
+    echo '[]' > /app/data/chat.json
+fi
+
 chown nobody:nogroup /app/data/*.json
 chmod 664 /app/data/*.json
 chown -R nobody:nogroup /app/data/gallery-images
