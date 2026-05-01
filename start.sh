@@ -2,7 +2,7 @@
 set -e
 
 # 确保data目录存在且有写入权限
-mkdir -p /app/data /app/data/gallery-images /var/log/nginx /var/run/nginx /run
+mkdir -p /app/data /app/data/gallery-images /app/data/gallery-images/original /app/data/gallery-images/thumbs /var/log/nginx /var/run/nginx /run
 chown -R nobody:nogroup /app/data
 chmod 775 /app/data
 mkdir -p /tmp/nginx-client-body
@@ -66,6 +66,7 @@ chown nobody:nogroup /app/data/*.json
 chmod 664 /app/data/*.json
 chown -R nobody:nogroup /app/data/gallery-images
 chmod 775 /app/data/gallery-images
+chmod 775 /app/data/gallery-images/original /app/data/gallery-images/thumbs
 
 # 启动PHP-FPM
 php-fpm -y /app/php-fpm.conf &

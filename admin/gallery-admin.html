@@ -461,7 +461,7 @@ code{
               <button class="btn blue" type="button" id="chooseImageBtn">&#x9009;&#x62E9;&#x56FE;&#x7247;</button>
               <button class="btn dark" type="button" id="clearImageBtn">&#x6E05;&#x9664;&#x5DF2;&#x9009;&#x56FE;&#x7247;</button>
             </div>
-            <div class="upload-meta" id="uploadMeta">&#x53EA;&#x652F;&#x6301; JPG / PNG / WEBP / GIF&#xFF0C;&#x5355;&#x5F20;&#x4E0D;&#x8981;&#x8D85;&#x8FC7; 8MB</div>
+            <div class="upload-meta" id="uploadMeta">&#x53EA;&#x652F;&#x6301; JPG / PNG / WEBP / GIF&#xFF0C;&#x5355;&#x5F20;&#x4E0D;&#x8981;&#x8D85;&#x8FC7; 50MB</div>
             <input id="imageFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple style="display:none;">
           </div>
 
@@ -533,7 +533,7 @@ const SERVER_GALLERY_JSON = "../data/gallery.json";
 const SERVER_SAVE_API = "api/save-gallery.php";
 const SERVER_IMAGE_UPLOAD_API = "api/upload-gallery-image.php";
 const PREVIEW_PATH_PREFIX = "../";
-const MAX_IMAGE_SIZE = 8 * 1024 * 1024;
+const MAX_IMAGE_SIZE = 50 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg","image/png","image/webp","image/gif"]);
 const EMPTY_PREVIEW_HTML = `
   <div class="upload-empty">
@@ -572,6 +572,7 @@ let items = [];
 let editingIndex = -1;
 let embeddedImageData = "";
 let uploadedImagePath = "";
+let uploadedThumbPath = "";
 let manualAuthHeader = "";
 
 function escapeHtml(value){
@@ -607,7 +608,7 @@ function isDataImageUrl(value){
 
 function isUploadedImagePath(value){
   const clean = String(value || "").trim().replace(/^\.\//, "");
-  return /^data\/gallery-images\/[A-Za-z0-9_.%-]+$/.test(clean);
+  return /^data\/gallery-images\/[A-Za-z0-9_/.%-]+$/.test(clean) && !clean.includes("..");
 }
 
 function normalizeUploadedImagePath(value){
@@ -689,15 +690,18 @@ function normalizeSort(value){
 function normalizeItem(raw){
   const imageFromUpload = isDataImageUrl(raw.image) ? String(raw.image).trim() : "";
   const uploadedPath = normalizeUploadedImagePath(raw.image);
+  const uploadedThumb = normalizeUploadedImagePath(raw.thumb);
   const manualPath = normalizeManualImagePath(raw.image);
   const filename = sanitizeFilename(raw.filename) || getFilenameFromImage(uploadedPath || imageFromUpload || manualPath);
   const image = uploadedPath || imageFromUpload || manualPath || (filename ? BASE_IMAGE_PATH + filename : "");
+  const thumb = uploadedThumb && uploadedThumb !== image ? uploadedThumb : "";
   const link = sanitizeLink(raw.link);
 
   return {
     title:sanitizeTitle(raw.title) || defaultTitleFromFilename(filename || "image"),
     filename,
     image,
+    thumb,
     link,
     sort:normalizeSort(raw.sort),
     enabled:raw.enabled !== false
@@ -708,6 +712,7 @@ function exportItems(){
   return items.map(item => ({
     title:item.title,
     image:item.image,
+    thumb:item.thumb || "",
     link:item.link,
     sort:item.sort,
     enabled:item.enabled
@@ -724,17 +729,18 @@ function saveDraft(){
   countPill.textContent = `${items.length} \u5f20\u56fe\u7247`;
 }
 
-function showUploadPreview(src, meta, isEmbedded){
+function showUploadPreview(src, meta, isEmbedded, thumb = ""){
   uploadBox.classList.toggle("has-image", Boolean(src));
   if(src){
-    uploadPreview.innerHTML = `<img src="${escapeHtml(getPreviewSrc(src))}" alt="preview">`;
+    uploadPreview.innerHTML = `<img src="${escapeHtml(getPreviewSrc(thumb || src))}" alt="preview">`;
     uploadMeta.textContent = meta;
   }else{
     uploadPreview.innerHTML = EMPTY_PREVIEW_HTML;
-    uploadMeta.textContent = "\u53ea\u652f\u6301 JPG / PNG / WEBP / GIF\uff0c\u5355\u5f20\u4e0d\u8981\u8d85\u8fc7 8MB";
+    uploadMeta.textContent = "\u53ea\u652f\u6301 JPG / PNG / WEBP / GIF\uff0c\u5355\u5f20\u4e0d\u8981\u8d85\u8fc7 50MB";
   }
   embeddedImageData = isEmbedded ? src : "";
   uploadedImagePath = !isEmbedded && isUploadedImagePath(src) ? src : "";
+  uploadedThumbPath = !isEmbedded && isUploadedImagePath(thumb) ? thumb : "";
 }
 
 function updatePreviewFromFilename(){
@@ -751,6 +757,7 @@ function clearForm(){
   editingIndex = -1;
   embeddedImageData = "";
   uploadedImagePath = "";
+  uploadedThumbPath = "";
   titleInput.value = "";
   filenameInput.value = "";
   linkInput.value = "";
@@ -772,7 +779,7 @@ function fillForm(item, index){
   if(isDataImageUrl(item.image)){
     showUploadPreview(item.image, "\u5f53\u524d\u662f\u5df2\u5185\u5d4c\u7684\u8d34\u56fe", true);
   }else if(isUploadedImagePath(item.image)){
-    showUploadPreview(item.image, `\u5f53\u524d\u4f7f\u7528\u5df2\u4e0a\u4f20\u56fe\u7247\uff1a${item.image}`, false);
+    showUploadPreview(item.image, `\u5f53\u524d\u4f7f\u7528\u5df2\u4e0a\u4f20\u56fe\u7247\uff1a${item.image}`, false, item.thumb || "");
   }else if(item.image){
     showUploadPreview(item.image, `\u5f53\u524d\u4f7f\u7528\u6587\u4ef6\u8def\u5f84\uff1a${item.image}`, false);
   }else{
@@ -783,13 +790,14 @@ function fillForm(item, index){
 }
 
 function renderThumb(item){
-  if(!item.image){
+  const thumb = item.thumb || item.image;
+  if(!thumb){
     return `<div class="thumb">\u6682\u65e0\u56fe\u7247</div>`;
   }
 
   return `
     <div class="thumb">
-      <img src="${escapeHtml(getPreviewSrc(item.image))}" alt="${escapeHtml(item.title || "image")}" loading="lazy"
+      <img src="${escapeHtml(getPreviewSrc(thumb))}" alt="${escapeHtml(item.title || "image")}" loading="lazy"
         onerror="this.style.display='none';this.parentNode.textContent='Image missing';">
     </div>
   `;
@@ -809,6 +817,7 @@ function renderList(){
         <strong>${escapeHtml(item.title || "\u672a\u547d\u540d\u56fe\u7247")}</strong>
         <div class="meta-line">\u6587\u4ef6\u540d\uff1a${escapeHtml(item.filename || "\u5185\u5d4c\u8d34\u56fe")}</div>
         <div class="meta-line">\u56fe\u7247\u6765\u6e90\uff1a${escapeHtml(isDataImageUrl(item.image) ? "\u76f4\u63a5\u5199\u5165 JSON" : item.image || "-")}</div>
+        <div class="meta-line">\u7f29\u7565\u56fe\uff1a${escapeHtml(item.thumb || "\u81ea\u52a8\u4f7f\u7528\u539f\u56fe")}</div>
         <div class="meta-line">\u94fe\u63a5\uff1a${escapeHtml(item.link || "\u65e0")}</div>
         <div class="chip">\u6392\u5e8f ${item.sort}</div>
         <div class="chip">${item.enabled ? "\u663e\u793a\u4e2d" : "\u5df2\u9690\u85cf"}</div>
@@ -842,6 +851,7 @@ function getFormItem(){
 
   const safeFilename = sanitizeFilename(filenameInput.value);
   const image = uploadedImagePath || embeddedImageData || (safeFilename ? BASE_IMAGE_PATH + safeFilename : "");
+  const thumb = uploadedThumbPath && uploadedThumbPath !== image ? uploadedThumbPath : "";
   if(!image){
     setStatus("\u8bf7\u5148\u9009\u56fe\u3001\u62d6\u56fe\u3001\u7c98\u8d34\u56fe\uff0c\u6216\u8005\u586b\u5199\u56fe\u7247\u6587\u4ef6\u540d\u3002", true);
     return null;
@@ -857,6 +867,7 @@ function getFormItem(){
     title:titleInput.value,
     filename:safeFilename,
     image,
+    thumb,
     link:safeLinkValue,
     sort:sortInput.value || 0,
     enabled:enabledInput.checked
@@ -1008,6 +1019,7 @@ function loadExportItems(list){
       title:item?.title,
       filename:getFilenameFromImage(item?.image),
       image:item?.image,
+      thumb:item?.thumb,
       link:item?.link,
       sort:item?.sort,
       enabled:item?.enabled
@@ -1093,7 +1105,10 @@ async function uploadImageFile(file, authHeader = ""){
   if(!response.ok || !result.ok || !result.path){
     throw new Error(`HTTP ${response.status} ${result.error || "upload_failed"}`);
   }
-  return String(result.path);
+  return {
+    path:String(result.path),
+    thumb:result.thumb ? String(result.thumb) : ""
+  };
 }
 
 async function uploadImageWithAuthRetry(file){
@@ -1121,14 +1136,16 @@ async function handleImageFile(file){
   }
 
   if(file.size > MAX_IMAGE_SIZE){
-    setStatus("\u56fe\u7247\u8bf7\u5c0f\u4e8e 8MB\u3002", true);
+    setStatus("\u56fe\u7247\u8bf7\u5c0f\u4e8e 50MB\u3002", true);
     return;
   }
 
   try{
     const safeName = sanitizeFilename(file.name) || `image-${Date.now()}.jpg`;
     setStatus("\u56fe\u7247\u6b63\u5728\u4e0a\u4f20\u5230\u670d\u52a1\u5668...");
-    const imagePath = await uploadImageWithAuthRetry(file);
+    const uploadResult = await uploadImageWithAuthRetry(file);
+    const imagePath = uploadResult.path;
+    const thumbPath = uploadResult.thumb || "";
     if(!titleInput.value.trim()){
       titleInput.value = defaultTitleFromFilename(safeName);
     }
@@ -1136,7 +1153,7 @@ async function handleImageFile(file){
       filenameInput.value = safeName;
     }
 
-    showUploadPreview(imagePath, `\u5df2\u4e0a\u4f20\uff1a${safeName} | ${Math.round(file.size / 1024)}KB | JSON \u53ea\u4fdd\u5b58\u56fe\u7247\u8def\u5f84`, false);
+    showUploadPreview(imagePath, `\u5df2\u4e0a\u4f20\uff1a${safeName} | ${Math.round(file.size / 1024)}KB | \u5df2\u4fdd\u7559\u539f\u56fe${thumbPath ? "\uff0c\u5df2\u751f\u6210\u7f29\u7565\u56fe" : ""}`, false, thumbPath);
     setStatus("\u56fe\u7247\u5df2\u4e0a\u4f20\u3002\u70b9\u201c\u65b0\u589e\u5230\u5217\u8868\u201d\u540e\uff0c\u518d\u70b9\u201c\u540c\u6b65\u670d\u52a1\u5668\u201d\u3002");
   }catch(error){
     setStatus(`\u56fe\u7247\u4e0a\u4f20\u5931\u8d25\uff1a${error.message}\u3002`, true);
@@ -1167,17 +1184,20 @@ async function handleImageFiles(fileList){
       }
 
       if(file.size > MAX_IMAGE_SIZE){
-        failed.push(`${file.name || safeName}: >8MB`);
+        failed.push(`${file.name || safeName}: >50MB`);
         continue;
       }
 
       try{
         setStatus(`\u6b63\u5728\u4e0a\u4f20 ${index + 1}/${files.length}\uff1a${safeName}`);
-        const imagePath = await uploadImageWithAuthRetry(file);
+        const uploadResult = await uploadImageWithAuthRetry(file);
+        const imagePath = uploadResult.path;
+        const thumbPath = uploadResult.thumb || "";
         items.push(normalizeItem({
           title:defaultTitleFromFilename(safeName),
           filename:safeName,
           image:imagePath,
+          thumb:thumbPath,
           link:"",
           sort:nextSortValue(),
           enabled:true
@@ -1220,6 +1240,7 @@ chooseImageBtn.addEventListener("click", () => imageFileInput.click());
 clearImageBtn.addEventListener("click", () => {
   embeddedImageData = "";
   uploadedImagePath = "";
+  uploadedThumbPath = "";
   imageFileInput.value = "";
   filenameInput.value = "";
   showUploadPreview("", "", false);

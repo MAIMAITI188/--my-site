@@ -438,6 +438,12 @@ function normalizeImageSrc(value){
   return "";
 }
 
+function getGalleryImageSources(item){
+  const original = normalizeImageSrc(item?.image);
+  const thumb = normalizeImageSrc(item?.thumb) || original;
+  return { original, thumb };
+}
+
 function normalizeLinkHref(value){
   const clean = String(value || "").trim();
   if(!clean || hasUnsafeUrlChars(clean)){
@@ -483,11 +489,11 @@ function renderEmpty(message){
 
 function buildCard(item){
   const title = escapeHtml(item.title || "未命名图片");
-  const imageSrc = normalizeImageSrc(item.image);
+  const sources = getGalleryImageSources(item);
   const linkHref = normalizeLinkHref(item.link);
-  const image = imageSrc ? `
+  const image = sources.original ? `
     <div class="gallery-media">
-      <img class="gallery-image" src="${escapeHtml(imageSrc)}" alt="${title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+      <img class="gallery-image" src="${escapeHtml(sources.thumb)}" data-original="${escapeHtml(sources.original)}" alt="${title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
       <div class="gallery-placeholder" style="display:none;">图片文件不存在<br>请检查图片路径</div>
     </div>
   ` : `
@@ -542,7 +548,7 @@ gallery.addEventListener("click", event => {
   }
 
   event.preventDefault();
-  openLightbox(image.currentSrc || image.src, image.alt);
+  openLightbox(image.dataset.original || image.currentSrc || image.src, image.alt);
 });
 
 lightbox.addEventListener("click", event => {

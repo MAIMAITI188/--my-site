@@ -42,6 +42,13 @@ function valid_image($value): bool {
         && strpos($value, '..') === false;
 }
 
+function valid_optional_image($value): bool {
+    if ($value === '') {
+        return true;
+    }
+    return valid_image($value);
+}
+
 function valid_link($value): bool {
     if (!valid_text($value, 1000)) {
         return false;
@@ -82,17 +89,19 @@ foreach ($items as $item) {
 
     $title = isset($item['title']) ? (string) $item['title'] : '';
     $image = isset($item['image']) ? (string) $item['image'] : '';
+    $thumb = isset($item['thumb']) ? (string) $item['thumb'] : '';
     $link = isset($item['link']) ? (string) $item['link'] : '';
     $sort = isset($item['sort']) && is_numeric($item['sort']) ? (int) $item['sort'] : 0;
     $enabled = !array_key_exists('enabled', $item) || $item['enabled'] !== false;
 
-    if (!valid_text($title, 200) || !valid_image($image) || !valid_link($link)) {
+    if (!valid_text($title, 200) || !valid_image($image) || !valid_optional_image($thumb) || !valid_link($link)) {
         respond(422, ['ok' => false, 'error' => 'invalid_gallery_item']);
     }
 
     $clean[] = [
         'title' => $title,
         'image' => $image,
+        'thumb' => $thumb,
         'link' => $link,
         'sort' => $sort,
         'enabled' => $enabled
