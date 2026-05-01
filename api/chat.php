@@ -100,9 +100,17 @@ $ipHash = hash('sha256', $ip);
 $messages = read_messages($file);
 $now = (int) round(microtime(true) * 1000);
 
-foreach (array_slice(array_reverse($messages), 0, 5) as $message) {
-    if (($message['ipHash'] ?? '') === $ipHash && $now - (int) ($message['createdAt'] ?? 0) < 3000) {
+foreach (array_slice(array_reverse($messages), 0, 20) as $message) {
+    if (($message['ipHash'] ?? '') !== $ipHash) {
+        continue;
+    }
+
+    $age = $now - (int) ($message['createdAt'] ?? 0);
+    if ($age < 3000) {
         respond(429, ['ok' => false, 'error' => 'too_many_requests']);
+    }
+    if ($age < 60000 && clean_text($message['text'] ?? '', 300) === $text) {
+        respond(429, ['ok' => false, 'error' => 'duplicate_message']);
     }
 }
 
