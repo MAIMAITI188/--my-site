@@ -109,19 +109,15 @@ body{
 }
 
 .gallery{
-  display:block;
-  column-count:2;
-  column-gap:16px;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
   padding:0 var(--site-gap) 26px;
 }
 
 .gallery-card{
-  display:inline-block;
-  width:100%;
-  margin:0 0 16px;
-  break-inside:avoid;
-  page-break-inside:avoid;
-  vertical-align:top;
+  display:block;
+  min-width:0;
   background:#fff;
   border-radius:12px;
   overflow:hidden;
@@ -140,12 +136,13 @@ body{
   align-items:center;
   justify-content:center;
   background:#f5f7f6;
+  min-height:120px;
   line-height:0;
 }
 
 .gallery-image{
-  width:auto;
-  max-width:100%;
+  width:100%;
+  max-width:none;
   height:auto;
   display:block;
   margin:0 auto;
@@ -166,8 +163,12 @@ body{
   line-height:1.6;
 }
 
+.gallery-placeholder.is-hidden{
+  display:none;
+}
+
 .empty-box{
-  column-span:all;
+  grid-column:1 / -1;
   padding:26px 18px;
   border:1px dashed #caddce;
   border-radius:14px;
@@ -306,17 +307,15 @@ body{
     font-size:18px;
   }
   .gallery{
-    column-count:2;
-    column-gap:12px;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
     padding:0 var(--site-gap) 18px;
   }
-  .gallery-card{
-    margin-bottom:12px;
-  }
+  .gallery-media{min-height:96px}
   .gallery-placeholder{
-    min-height:88px;
-    padding:18px 12px;
-    font-size:13px;
+    min-height:96px;
+    padding:14px 8px;
+    font-size:12px;
   }
   .lightbox{
     padding:12px;
@@ -487,14 +486,27 @@ function renderEmpty(message){
   gallery.innerHTML = `<div class="empty-box">${message}</div>`;
 }
 
+function handleGalleryImageError(image){
+  const original = image.dataset.original || "";
+  const triedOriginal = image.dataset.triedOriginal === "1";
+  if(original && image.src !== original && !triedOriginal){
+    image.dataset.triedOriginal = "1";
+    image.src = original;
+    return;
+  }
+
+  image.style.display = "none";
+  image.nextElementSibling?.classList.remove("is-hidden");
+}
+
 function buildCard(item){
   const title = escapeHtml(item.title || "未命名图片");
   const sources = getGalleryImageSources(item);
   const linkHref = normalizeLinkHref(item.link);
   const image = sources.original ? `
     <div class="gallery-media">
-      <img class="gallery-image" src="${escapeHtml(sources.thumb)}" data-original="${escapeHtml(sources.original)}" alt="${title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-      <div class="gallery-placeholder" style="display:none;">图片文件不存在<br>请检查图片路径</div>
+      <img class="gallery-image" src="${escapeHtml(sources.thumb)}" data-original="${escapeHtml(sources.original)}" alt="${title}" loading="lazy" onerror="handleGalleryImageError(this)">
+      <div class="gallery-placeholder is-hidden">图片文件不存在<br>请检查图片路径</div>
     </div>
   ` : `
     <div class="gallery-placeholder">这条数据还没有填写图片路径</div>
