@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>历史开奖</title>
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  min-height:max(320vh,2200px);
+  color:#064e3b;
+  font-family:Arial,"Microsoft YaHei",sans-serif;
+  background:#f7fcf8;
+}
+
+.history-head{
+  position:sticky;
+  top:0;
+  z-index:5;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:16px 22px 13px;
+  background:linear-gradient(180deg,#f7fcf8 0%,#edf9f0 100%);
+  border-bottom:1px solid #d7eadf;
+  box-shadow:0 8px 20px rgba(12,92,49,.06);
+}
+
+.history-title-row{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  min-width:0;
+}
+
+.history-title-logo{
+  width:38px;
+  height:38px;
+  flex:0 0 38px;
+  display:block;
+  object-fit:contain;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 6px 16px rgba(0,0,0,.16);
+}
+
+h1{
+  margin:0;
+  font-size:24px;
+  line-height:1.1;
+}
+
+.back-btn{
+  border:0;
+  min-width:72px;
+  height:40px;
+  padding:0 16px;
+  border-radius:999px;
+  background:rgba(255,255,255,.92);
+  color:#0b7e3f;
+  font-size:15px;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 8px 22px rgba(0,0,0,.12);
+}
+
+.history-list{
+  width:min(1160px,100%);
+  margin:0 auto;
+  padding:14px 18px 36px;
+  column-count:3;
+  column-gap:14px;
+}
+
+.history-empty{
+  padding:20px 0 10px;
+  color:#6c8576;
+  font-size:16px;
+}
+
+.history-item{
+  display:inline-block;
+  width:100%;
+  margin:0 0 10px;
+  padding:10px;
+  border:1px solid #d7eadf;
+  border-radius:12px;
+  background:rgba(255,255,255,.68);
+  box-shadow:0 8px 22px rgba(12,92,49,.08);
+  break-inside:avoid;
+  text-align:left;
+}
+
+.history-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:7px;
+  font-size:14px;
+  font-weight:bold;
+}
+
+.history-balls{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:7px;
+}
+
+.history-entry{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+}
+
+.history-num{
+  min-width:42px;
+  width:44px;
+  height:44px;
+  padding:0;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-size:16px;
+  font-weight:900;
+  box-shadow:0 6px 14px rgba(0,0,0,.14);
+}
+
+.history-num.red{background:linear-gradient(145deg,#ff5a5a,#b90f0f)}
+.history-num.blue{background:linear-gradient(145deg,#4d98ff,#145fc8)}
+.history-num.green{background:linear-gradient(145deg,#20d66f,#088b43)}
+
+.history-num-text{
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  gap:0;
+  color:#355446;
+  line-height:1.1;
+  white-space:nowrap;
+}
+
+.history-num-zodiac{
+  font-size:12px;
+  font-weight:bold;
+}
+
+.history-num-zodiac::after{
+  content:"/";
+  margin:0 1px;
+  color:#789281;
+  font-weight:normal;
+}
+
+.history-num-element{
+  font-size:12px;
+  color:#5f7d69;
+}
+
+.history-plus{
+  font-size:28px;
+  font-weight:bold;
+  color:#0c8e47;
+  line-height:1;
+  padding:0 2px;
+}
+
+@media(max-width:768px){
+  body{
+    min-height:max(320vh,2200px);
+  }
+
+  .history-head{
+    padding:10px 10px 8px;
+  }
+
+  .history-title-logo{
+    width:30px;
+    height:30px;
+    flex-basis:30px;
+  }
+
+  h1{
+    font-size:18px;
+  }
+
+  .back-btn{
+    min-width:58px;
+    height:34px;
+    padding:0 12px;
+    font-size:13px;
+  }
+
+  .history-list{
+    padding:10px 8px 28px;
+    column-count:1;
+  }
+
+  .history-item{
+    padding:9px;
+  }
+
+  .history-title{
+    font-size:13px;
+    margin-bottom:5px;
+  }
+
+  .history-balls{
+    flex-wrap:nowrap;
+    justify-content:space-between;
+    gap:2px;
+    overflow:visible;
+  }
+
+  .history-num{
+    min-width:0;
+    width:28px;
+    height:28px;
+    font-size:12px;
+    box-shadow:0 3px 8px rgba(0,0,0,.12);
+  }
+
+  .history-entry{
+    flex:1 1 0;
+    min-width:0;
+    gap:3px;
+  }
+
+  .history-num-zodiac,
+  .history-num-element{
+    font-size:10px;
+  }
+
+  .history-plus{
+    flex:0 0 10px;
+    padding:0;
+    font-size:16px;
+    text-align:center;
+  }
+}
+</style>
+</head>
+<body>
+<header class="history-head">
+  <div class="history-title-row">
+    <img class="history-title-logo" src="assets/hk-logo.png" alt="香港紫荆花标志">
+    <h1>历史开奖</h1>
+  </div>
+  <button class="back-btn" id="backBtn" type="button">返回</button>
+</header>
+
+<main class="history-list" id="historyList"></main>
+
+<script>
+const STORAGE_KEY = "lhc";
+const HISTORY_KEY = "lhc_history";
+const SERVER_DATA_URL = "data/lottery.json";
+const historyList = document.getElementById("historyList");
+const backBtn = document.getElementById("backBtn");
+const URL_PARAMS = new URLSearchParams(window.location.search);
+const IS_DEMO_MODE = URL_PARAMS.has("demo");
+const DEMO_LOTTERY_DATA = {
+  period:"2026001",
+  nextTime:"2026-05-01 21:30",
+  updateTime:"demo",
+  items:[
+    { num:"08", color:"red", note:"\u91d1/\u9f99" },
+    { num:"16", color:"blue", note:"\u6728/\u9a6c" },
+    { num:"23", color:"green", note:"\u6c34/\u72d7" },
+    { num:"31", color:"red", note:"\u706b/\u864e" },
+    { num:"38", color:"green", note:"\u571f/\u7f8a" },
+    { num:"42", color:"blue", note:"\u91d1/\u725b" },
+    { num:"49", color:"green", note:"\u6c34/\u86c7" }
+  ]
+};
+
+let serverState = {
+  current:null,
+  history:[]
+};
+
+const SAFE_COLORS = new Set(["red", "blue", "green"]);
+
+function loadJson(key, fallback){
+  const raw = localStorage.getItem(key);
+  if(!raw){
+    return fallback;
+  }
+
+  try{
+    const data = JSON.parse(raw);
+    return data ?? fallback;
+  }catch(error){
+    return fallback;
+  }
+}
+
+function normalizeServerState(raw){
+  if(raw && typeof raw === "object" && !Array.isArray(raw)){
+    if("current" in raw || "history" in raw || "countdown" in raw){
+      const current = raw.current && typeof raw.current === "object"
+        ? {
+            ...raw.current,
+            updateTime:raw.current.updateTime || raw.current.updatedAt || raw.exportedAt || ""
+          }
+        : null;
+      return {
+        current,
+        history:Array.isArray(raw.history) ? raw.history : []
+      };
+    }
+
+    if(raw.period && Array.isArray(raw.items)){
+      return {
+        current:raw,
+        history:[]
+      };
+    }
+  }
+
+  return {
+    current:null,
+    history:[]
+  };
+}
+
+function dataTimestamp(value){
+  if(!value || typeof value !== "object"){
+    return 0;
+  }
+
+  const timestamp = Number(value.updateTime || value.updatedAt || 0);
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function pickNewestData(localData, serverData){
+  if(!localData){
+    return serverData;
+  }
+  if(!serverData){
+    return localData;
+  }
+  return dataTimestamp(serverData) > dataTimestamp(localData) ? serverData : localData;
+}
+
+function getCurrentLotteryData(){
+  if(IS_DEMO_MODE){
+    return DEMO_LOTTERY_DATA;
+  }
+
+  return pickNewestData(loadJson(STORAGE_KEY, null), serverState.current);
+}
+
+function loadHistory(){
+  const list = loadJson(HISTORY_KEY, null);
+  if(Array.isArray(list) && list.length){
+    return list;
+  }
+  return Array.isArray(serverState.history) ? serverState.history : [];
+}
+
+function escapeHtml(value){
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function safeColor(value){
+  const color = String(value || "");
+  return SAFE_COLORS.has(color) ? color : "green";
+}
+
+function safeNumber(value, fallback = "--"){
+  const clean = String(value || "").replace(/\D/g, "").slice(0, 2);
+  const number = Number(clean);
+  if(number < 1 || number > 49){
+    return fallback;
+  }
+  return String(number).padStart(2, "0");
+}
+
+function buildHistoryRows(items){
+  if(!Array.isArray(items)){
+    return "";
+  }
+
+  let html = "";
+  items.forEach((item, index) => {
+    const row = item || {};
+    const noteParts = row.note ? String(row.note).split("/").map(part => part.trim()) : [];
+    const element = escapeHtml(noteParts[0] || "--");
+    const zodiac = escapeHtml(noteParts[1] || "--");
+    const color = safeColor(row.color);
+    const num = safeNumber(row.num);
+    if(index === 6){
+      html += `<span class="history-plus">+</span>`;
+    }
+    html += `
+      <span class="history-entry">
+        <span class="history-num ${color}">${num}</span>
+        <span class="history-num-text">
+          <span class="history-num-zodiac">${zodiac}</span>
+          <span class="history-num-element">${element}</span>
+        </span>
+      </span>
+    `;
+  });
+  return html;
+}
+
+function getMergedHistory(){
+  const currentData = getCurrentLotteryData();
+  const history = loadHistory();
+  const merged = [];
+
+  if(currentData && Array.isArray(currentData.items) && currentData.items.length){
+    merged.push({ ...currentData, _isCurrent:true });
+  }
+
+  history.forEach(entry => {
+    const duplicated = merged.some(item => String(item.period || "") === String(entry.period || "") && String(item.updateTime || "") === String(entry.updateTime || ""));
+    if(!duplicated){
+      merged.push(entry);
+    }
+  });
+
+  return merged;
+}
+
+function buildHistoryItem(entry){
+  const period = escapeHtml(entry?.period || "--");
+  const items = Array.isArray(entry?.items) ? entry.items : [];
+
+  return `
+    <section class="history-item">
+      <div class="history-title">
+        <span>第 ${period} 期</span>
+      </div>
+      <div class="history-balls">${buildHistoryRows(items)}</div>
+    </section>
+  `;
+}
+
+function renderHistory(){
+  const merged = getMergedHistory();
+  if(!merged.length){
+    historyList.innerHTML = `<div class="history-empty">暂时还没有历史开奖数据</div>`;
+    return;
+  }
+
+  historyList.innerHTML = merged.map(entry => buildHistoryItem(entry)).join("");
+}
+
+async function loadServerData(){
+  if(window.location.protocol === "file:"){
+    renderHistory();
+    return;
+  }
+
+  try{
+    const response = await fetch(`${SERVER_DATA_URL}?v=${Date.now()}`, { cache:"no-store" });
+    if(!response.ok){
+      throw new Error("HTTP " + response.status);
+    }
+    const raw = await response.json();
+    serverState = normalizeServerState(raw);
+  }catch(error){
+    serverState = {
+      current:null,
+      history:[]
+    };
+  }
+
+  renderHistory();
+}
+
+backBtn.addEventListener("click", () => {
+  const target = new URL("index.html", window.location.href).href;
+  try{
+    if(window.top && window.top !== window.self){
+      window.top.location.href = target;
+      return;
+    }
+  }catch(error){
+    window.open(target, "_top");
+    return;
+  }
+  window.location.href = target;
+});
+
+renderHistory();
+loadServerData();
+</script>
+</body>
+</html>

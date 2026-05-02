@@ -26,18 +26,6 @@ body{
   background:transparent;
 }
 
-body.history-open{
-  display:block;
-  height:auto;
-  min-height:max(320vh,2200px);
-  overflow:auto;
-  background:#f7fcf8;
-}
-
-body.history-open .box{
-  display:none;
-}
-
 .box{
   width:min(1200px,96vw);
   padding:30px 28px 64px;
@@ -277,218 +265,6 @@ h1{
     inset 0 1px 0 rgba(255,255,255,.9);
 }
 
-.history-modal{
-  position:fixed;
-  inset:0;
-  display:none;
-  padding:0;
-  background:#f7fcf8;
-  z-index:9999;
-  overflow:hidden;
-}
-
-.history-modal.is-open{
-  display:block;
-}
-
-body.history-open .history-modal{
-  position:relative;
-  inset:auto;
-  min-height:max(320vh,2200px);
-  overflow:visible;
-}
-
-.history-panel{
-  width:100%;
-  height:100%;
-  overflow:auto;
-  border-radius:0;
-  background:#f7fcf8;
-  box-shadow:none;
-  color:#104229;
-}
-
-body.history-open .history-panel{
-  height:auto;
-  min-height:max(320vh,2200px);
-  overflow:visible;
-}
-
-.history-panel.is-more-view{
-  width:100%;
-}
-
-.history-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:16px 22px 13px;
-  position:sticky;
-  top:0;
-  background:linear-gradient(180deg,#f7fcf8 0%,#edf9f0 100%);
-  border-bottom:1px solid #d7eadf;
-  box-shadow:0 8px 20px rgba(12,92,49,.06);
-  z-index:2;
-}
-
-.history-head h3{
-  margin:0;
-  font-size:24px;
-}
-
-.history-title-row{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  min-width:0;
-}
-
-.history-title-logo{
-  width:38px;
-  height:38px;
-  flex:0 0 38px;
-  display:block;
-  object-fit:contain;
-  border-radius:50%;
-  background:#fff;
-  box-shadow:0 6px 16px rgba(0,0,0,.16);
-}
-
-.history-close{
-  border:0;
-  width:40px;
-  height:40px;
-  border-radius:50%;
-  background:rgba(255,255,255,.92);
-  color:#0b7e3f;
-  font-size:24px;
-  line-height:1;
-  cursor:pointer;
-  box-shadow:0 8px 22px rgba(0,0,0,.12);
-}
-
-.history-list{
-  width:min(1160px,100%);
-  margin:0 auto;
-  padding:14px 18px 24px;
-}
-
-.history-empty{
-  padding:20px 0 10px;
-  color:#6c8576;
-  font-size:16px;
-}
-
-.history-item{
-  padding:12px 0;
-  border-top:1px solid #ddebe0;
-  text-align:left;
-}
-
-.history-item:first-child{
-  border-top:0;
-}
-
-.history-title{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin-bottom:7px;
-  font-size:15px;
-  font-weight:bold;
-}
-
-.history-balls{
-  display:flex;
-  flex-wrap:wrap;
-  align-items:center;
-  gap:7px;
-}
-
-.history-num{
-  min-width:42px;
-  width:44px;
-  height:44px;
-  padding:0;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#fff;
-  font-size:16px;
-  font-weight:900;
-  box-shadow:0 6px 14px rgba(0,0,0,.14);
-}
-
-.history-entry{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:4px;
-}
-
-.history-num-text{
-  display:flex;
-  flex-direction:row;
-  align-items:center;
-  gap:0;
-  color:#355446;
-  line-height:1.1;
-  white-space:nowrap;
-}
-
-.history-num-zodiac{
-  font-size:12px;
-  font-weight:bold;
-}
-
-.history-num-zodiac::after{
-  content:"/";
-  margin:0 1px;
-  color:#789281;
-  font-weight:normal;
-}
-
-.history-num-element{
-  font-size:12px;
-  color:#5f7d69;
-}
-
-.history-num.red{background:linear-gradient(145deg,#ff5a5a,#b90f0f)}
-.history-num.blue{background:linear-gradient(145deg,#4d98ff,#145fc8)}
-.history-num.green{background:linear-gradient(145deg,#20d66f,#088b43)}
-
-.history-waterfall{
-  column-count:3;
-  column-gap:14px;
-}
-
-.history-waterfall .history-item{
-  display:inline-block;
-  width:100%;
-  margin:0 0 10px;
-  padding:10px;
-  border:1px solid #d7eadf;
-  border-radius:12px;
-  background:rgba(255,255,255,.68);
-  box-shadow:0 8px 22px rgba(12,92,49,.08);
-  break-inside:avoid;
-}
-
-.history-waterfall .history-title{
-  font-size:14px;
-}
-
-.history-plus{
-  font-size:28px;
-  font-weight:bold;
-  color:#0c8e47;
-  line-height:1;
-  padding:0 2px;
-}
-
 @media(max-width:768px){
   body{
     align-items:flex-start;
@@ -532,72 +308,6 @@ body.history-open .history-panel{
   .note{margin-top:14px;font-size:26px;min-height:38px}
   .next-time{font-size:26px}
   .refresh-btn{right:28px;bottom:16px;height:42px;min-width:104px;font-size:18px}
-  .history-head{
-    padding:10px 10px 8px;
-  }
-  .history-title-logo{
-    width:30px;
-    height:30px;
-    flex-basis:30px;
-  }
-  .history-head h3{
-    font-size:18px;
-  }
-  .history-close{
-    width:34px;
-    height:34px;
-    font-size:22px;
-  }
-  .history-panel{
-    max-height:none;
-    border-radius:0;
-  }
-  .history-list{
-    padding:10px 8px 16px;
-  }
-  .history-item{
-    padding:9px 0;
-  }
-  .history-title{
-    font-size:13px;
-    margin-bottom:5px;
-  }
-  .history-waterfall{
-    column-count:1;
-  }
-  .history-waterfall .history-item{
-    padding:9px;
-  }
-  .history-balls{
-    flex-wrap:nowrap;
-    justify-content:space-between;
-    gap:2px;
-    overflow:visible;
-  }
-  .history-num{
-    min-width:0;
-    width:28px;
-    height:28px;
-    font-size:12px;
-    box-shadow:0 3px 8px rgba(0,0,0,.12);
-  }
-  .history-entry{
-    flex:1 1 0;
-    min-width:0;
-    gap:3px;
-  }
-  .history-num-zodiac{
-    font-size:10px;
-  }
-  .history-num-element{
-    font-size:10px;
-  }
-  .history-plus{
-    flex:0 0 10px;
-    padding:0;
-    font-size:16px;
-    text-align:center;
-  }
 }
 
 @media(max-width:520px){
@@ -609,22 +319,6 @@ body.history-open .history-panel{
   padding:0;
   align-items:center;
   background:transparent;
-}
-
-.is-embedded body.history-open{
-  display:block;
-  height:auto;
-  min-height:max(320vh,2200px);
-  overflow:auto;
-  padding:0;
-  background:#f7fcf8;
-}
-
-.is-embedded body.history-open .history-modal,
-.is-embedded body.history-open .history-panel{
-  height:auto;
-  min-height:max(320vh,2200px);
-  overflow:visible;
 }
 
 .is-embedded .box{
@@ -795,22 +489,8 @@ body.history-open .history-panel{
   <button class="refresh-btn" id="refreshBtn" type="button">刷新</button>
 </div>
 
-<div class="history-modal" id="historyModal" aria-hidden="true">
-  <div class="history-panel" id="historyPanel">
-    <div class="history-head">
-      <div class="history-title-row">
-        <img class="history-title-logo" src="assets/hk-logo.png" alt="香港紫荆花标志">
-        <h3 id="historyHeading">历史开奖</h3>
-      </div>
-      <button class="history-close" id="historyClose" type="button" aria-label="关闭">×</button>
-    </div>
-    <div class="history-list" id="historyList"></div>
-  </div>
-</div>
-
 <script>
 const STORAGE_KEY = "lhc";
-const HISTORY_KEY = "lhc_history";
 const COUNTDOWN_KEY = "lhc_countdown";
 const ANIMATION_STATE_KEY = "lhc_animation_state";
 const SERVER_DATA_URL = "data/lottery.json";
@@ -820,11 +500,6 @@ const countdownText = document.getElementById("countdownText");
 const balls = document.getElementById("balls");
 const historyBtn = document.getElementById("historyBtn");
 const refreshBtn = document.getElementById("refreshBtn");
-const historyModal = document.getElementById("historyModal");
-const historyPanel = document.getElementById("historyPanel");
-const historyHeading = document.getElementById("historyHeading");
-const historyClose = document.getElementById("historyClose");
-const historyList = document.getElementById("historyList");
 const URL_PARAMS = new URLSearchParams(window.location.search);
 const IS_DEMO_MODE = URL_PARAMS.has("demo");
 const ANIMATION_END_BUFFER_MS = 3000;
@@ -1102,118 +777,6 @@ function updateCountdown(){
   countdownText.classList.toggle("is-alert", diff <= 5 * 60 * 1000);
 }
 
-function loadHistory(){
-  const list = loadJson(HISTORY_KEY, null);
-  if(Array.isArray(list) && list.length){
-    return list;
-  }
-  return Array.isArray(serverState.history) ? serverState.history : [];
-}
-
-function buildHistoryRows(items){
-  if(!Array.isArray(items)){
-    return "";
-  }
-
-  let html = "";
-  items.forEach((item, index) => {
-    const row = item || {};
-    const noteParts = row.note ? String(row.note).split("/").map(part => part.trim()) : [];
-    const element = escapeHtml(noteParts[0] || "--");
-    const zodiac = escapeHtml(noteParts[1] || "--");
-    const color = safeColor(row.color);
-    const num = safeNumber(row.num);
-    if(index === 6){
-      html += `<span class="history-plus">+</span>`;
-    }
-    html += `
-      <span class="history-entry">
-        <span class="history-num ${color}">${num}</span>
-        <span class="history-num-text">
-          <span class="history-num-zodiac">${zodiac}</span>
-          <span class="history-num-element">${element}</span>
-        </span>
-      </span>
-    `;
-  });
-  return html;
-}
-
-function formatUpdateTime(value){
-  const time = new Date(Number(value));
-  if(Number.isNaN(time.getTime())){
-    return "";
-  }
-
-  const year = time.getFullYear();
-  const month = String(time.getMonth() + 1).padStart(2, "0");
-  const date = String(time.getDate()).padStart(2, "0");
-  const hour = String(time.getHours()).padStart(2, "0");
-  const minute = String(time.getMinutes()).padStart(2, "0");
-  return `${year}-${month}-${date} ${hour}:${minute}`;
-}
-
-function getMergedHistory(){
-  const history = loadHistory();
-  const merged = [];
-
-  if(currentData && Array.isArray(currentData.items) && currentData.items.length){
-    merged.push({ ...currentData, _isCurrent:true });
-  }
-
-  history.forEach(entry => {
-    const duplicated = merged.some(item => String(item.period || "") === String(entry.period || "") && String(item.updateTime || "") === String(entry.updateTime || ""));
-    if(!duplicated){
-      merged.push(entry);
-    }
-  });
-
-  return merged;
-}
-
-function buildHistoryItem(entry){
-  const period = escapeHtml(entry?.period || "--");
-  const items = Array.isArray(entry?.items) ? entry.items : [];
-
-  return `
-    <div class="history-item">
-      <div class="history-title">
-        <span>第 ${period} 期</span>
-      </div>
-      <div class="history-balls">${buildHistoryRows(items)}</div>
-    </div>
-  `;
-}
-
-function renderHistory(){
-  const merged = getMergedHistory();
-  historyHeading.innerText = "历史开奖";
-  historyPanel.classList.add("is-more-view");
-  historyList.classList.add("history-waterfall");
-
-  if(!merged.length){
-    historyList.innerHTML = `<div class="history-empty">暂时还没有历史开奖数据</div>`;
-    return;
-  }
-
-  historyList.innerHTML = merged.map(entry => buildHistoryItem(entry)).join("");
-}
-
-function openHistory(){
-  renderHistory();
-  document.body.classList.add("history-open");
-  historyModal.classList.add("is-open");
-  historyModal.setAttribute("aria-hidden", "false");
-  window.scrollTo({ top:0, left:0 });
-}
-
-function closeHistory(){
-  historyModal.classList.remove("is-open");
-  historyModal.setAttribute("aria-hidden", "true");
-  document.body.classList.remove("history-open");
-  window.scrollTo({ top:0, left:0 });
-}
-
 function ballHtml(color, num, extra = ""){
   const displayNum = num ? safeNumber(num, "") : "";
   return `<div class="ball ${safeColor(color)} ${safeExtraClass(extra)}"><span>${displayNum}</span><i class="shine"></i></div>`;
@@ -1464,20 +1027,21 @@ setInterval(load, 5000);
 setInterval(loadServerData, 15000);
 setInterval(updateCountdown, 1000);
 
-historyBtn.addEventListener("click", openHistory);
+historyBtn.addEventListener("click", () => {
+  const target = new URL("history.html", window.location.href).href;
+  try{
+    if(window.top && window.top !== window.self){
+      window.top.location.href = target;
+      return;
+    }
+  }catch(error){
+    window.open(target, "_top");
+    return;
+  }
+  window.location.href = target;
+});
 refreshBtn.addEventListener("click", () => {
   window.location.reload();
-});
-historyClose.addEventListener("click", closeHistory);
-historyModal.addEventListener("click", event => {
-  if(event.target === historyModal){
-    closeHistory();
-  }
-});
-document.addEventListener("keydown", event => {
-  if(event.key === "Escape" && historyModal.classList.contains("is-open")){
-    closeHistory();
-  }
 });
 </script>
 
