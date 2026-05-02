@@ -290,6 +290,10 @@ h1{
   color:#104229;
 }
 
+.history-panel.is-more-view{
+  width:min(1120px,100%);
+}
+
 .history-head{
   display:flex;
   align-items:center;
@@ -304,6 +308,43 @@ h1{
 .history-head h3{
   margin:0;
   font-size:24px;
+}
+
+.history-title-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+
+.history-title-logo{
+  width:38px;
+  height:38px;
+  flex:0 0 38px;
+  display:block;
+  object-fit:contain;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 5px 14px rgba(0,0,0,.14);
+}
+
+.history-back{
+  display:none;
+  align-items:center;
+  justify-content:center;
+  width:40px;
+  height:40px;
+  border:0;
+  border-radius:50%;
+  background:#ddf4e4;
+  color:#0b7e3f;
+  font-size:24px;
+  line-height:1;
+  cursor:pointer;
+}
+
+.history-panel.is-more-view .history-back{
+  display:flex;
 }
 
 .history-close{
@@ -329,7 +370,7 @@ h1{
 }
 
 .history-item{
-  padding:16px 0;
+  padding:12px 0;
   border-top:1px solid #ddebe0;
   text-align:left;
 }
@@ -343,30 +384,29 @@ h1{
   align-items:center;
   justify-content:space-between;
   gap:12px;
-  margin-bottom:10px;
-  font-size:22px;
+  margin-bottom:7px;
+  font-size:15px;
   font-weight:bold;
 }
 
-.history-badge{
-  padding:4px 10px;
+.history-more-btn{
+  flex:0 0 auto;
+  border:0;
+  padding:7px 13px;
   border-radius:999px;
-  background:#0ea84f;
+  background:linear-gradient(135deg,#16b760,#0b8d45);
   color:#fff;
   font-size:13px;
-}
-
-.history-meta{
-  margin-bottom:10px;
-  color:#5b7767;
-  font-size:15px;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 7px 16px rgba(14,168,79,.22);
 }
 
 .history-balls{
   display:flex;
   flex-wrap:wrap;
   align-items:center;
-  gap:8px;
+  gap:7px;
 }
 
 .history-num{
@@ -388,16 +428,17 @@ h1{
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:6px;
+  gap:4px;
 }
 
 .history-num-text{
   display:flex;
-  flex-direction:column;
+  flex-direction:row;
   align-items:center;
-  gap:2px;
+  gap:0;
   color:#355446;
   line-height:1.1;
+  white-space:nowrap;
 }
 
 .history-num-zodiac{
@@ -405,14 +446,42 @@ h1{
   font-weight:bold;
 }
 
+.history-num-zodiac::after{
+  content:"/";
+  margin:0 1px;
+  color:#789281;
+  font-weight:normal;
+}
+
 .history-num-element{
-  font-size:11px;
+  font-size:12px;
   color:#5f7d69;
 }
 
 .history-num.red{background:linear-gradient(145deg,#ff5a5a,#b90f0f)}
 .history-num.blue{background:linear-gradient(145deg,#4d98ff,#145fc8)}
 .history-num.green{background:linear-gradient(145deg,#20d66f,#088b43)}
+
+.history-waterfall{
+  column-count:2;
+  column-gap:14px;
+}
+
+.history-waterfall .history-item{
+  display:inline-block;
+  width:100%;
+  margin:0 0 10px;
+  padding:10px;
+  border:1px solid #d7eadf;
+  border-radius:12px;
+  background:rgba(255,255,255,.68);
+  box-shadow:0 8px 22px rgba(12,92,49,.08);
+  break-inside:avoid;
+}
+
+.history-waterfall .history-title{
+  font-size:14px;
+}
 
 .history-plus{
   font-size:28px;
@@ -473,20 +542,26 @@ h1{
     padding:0 10px 14px;
   }
   .history-item{
-    padding:12px 0;
+    padding:9px 0;
   }
   .history-title{
-    font-size:17px;
-    margin-bottom:8px;
+    font-size:13px;
+    margin-bottom:5px;
   }
-  .history-meta{
+  .history-more-btn{
+    padding:5px 10px;
     font-size:12px;
-    margin-bottom:8px;
+  }
+  .history-waterfall{
+    column-count:1;
+  }
+  .history-waterfall .history-item{
+    padding:9px;
   }
   .history-balls{
     flex-wrap:nowrap;
     justify-content:space-between;
-    gap:3px;
+    gap:2px;
     overflow:visible;
   }
   .history-num{
@@ -499,13 +574,13 @@ h1{
   .history-entry{
     flex:1 1 0;
     min-width:0;
-    gap:4px;
+    gap:3px;
   }
   .history-num-zodiac{
     font-size:10px;
   }
   .history-num-element{
-    font-size:9px;
+    font-size:10px;
   }
   .history-plus{
     flex:0 0 10px;
@@ -695,9 +770,13 @@ h1{
 </div>
 
 <div class="history-modal" id="historyModal" aria-hidden="true">
-  <div class="history-panel">
+  <div class="history-panel" id="historyPanel">
     <div class="history-head">
-      <h3>历史开奖</h3>
+      <div class="history-title-row">
+        <button class="history-back" id="historyBack" type="button" aria-label="返回">‹</button>
+        <img class="history-title-logo" src="assets/hk-logo.png" alt="香港紫荆花标志">
+        <h3 id="historyHeading">历史开奖</h3>
+      </div>
       <button class="history-close" id="historyClose" type="button" aria-label="关闭">×</button>
     </div>
     <div class="history-list" id="historyList"></div>
@@ -717,6 +796,9 @@ const balls = document.getElementById("balls");
 const historyBtn = document.getElementById("historyBtn");
 const refreshBtn = document.getElementById("refreshBtn");
 const historyModal = document.getElementById("historyModal");
+const historyPanel = document.getElementById("historyPanel");
+const historyBack = document.getElementById("historyBack");
+const historyHeading = document.getElementById("historyHeading");
 const historyClose = document.getElementById("historyClose");
 const historyList = document.getElementById("historyList");
 const URL_PARAMS = new URLSearchParams(window.location.search);
@@ -1047,7 +1129,7 @@ function formatUpdateTime(value){
   return `${year}-${month}-${date} ${hour}:${minute}`;
 }
 
-function renderHistory(){
+function getMergedHistory(){
   const history = loadHistory();
   const merged = [];
 
@@ -1062,28 +1144,53 @@ function renderHistory(){
     }
   });
 
+  return merged;
+}
+
+function buildHistoryItem(entry, options = {}){
+  const period = escapeHtml(entry?.period || "--");
+  const items = Array.isArray(entry?.items) ? entry.items : [];
+  const moreButton = options.showMoreButton
+    ? '<button class="history-more-btn" type="button" data-history-more>更多记录</button>'
+    : "";
+
+  return `
+    <div class="history-item">
+      <div class="history-title">
+        <span>第 ${period} 期</span>
+        ${moreButton}
+      </div>
+      <div class="history-balls">${buildHistoryRows(items)}</div>
+    </div>
+  `;
+}
+
+function renderHistory(){
+  const merged = getMergedHistory();
+  historyPanel.classList.remove("is-more-view");
+  historyHeading.innerText = "历史开奖";
+
   if(!merged.length){
     historyList.innerHTML = `<div class="history-empty">暂时还没有历史开奖数据</div>`;
     return;
   }
 
-  historyList.innerHTML = merged.map(entry => {
-    const period = escapeHtml(entry?.period || "--");
-    const nextTime = escapeHtml(entry?.nextTime || "");
-    const items = Array.isArray(entry?.items) ? entry.items : [];
-    return `
-    <div class="history-item">
-      <div class="history-title">
-        <span>第 ${period} 期</span>
-        ${entry._isCurrent ? '<span class="history-badge">当前</span>' : ""}
-      </div>
-      <div class="history-meta">
-        ${nextTime ? `下期开奖时间：${nextTime}` : ""}
-      </div>
-      <div class="history-balls">${buildHistoryRows(items)}</div>
-    </div>
-  `;
-  }).join("");
+  historyList.classList.remove("history-waterfall");
+  historyList.innerHTML = merged.map(entry => buildHistoryItem(entry, { showMoreButton: Boolean(entry._isCurrent) })).join("");
+}
+
+function openMoreHistory(){
+  const merged = getMergedHistory();
+  historyPanel.classList.add("is-more-view");
+  historyHeading.innerText = "更多记录";
+  historyList.classList.add("history-waterfall");
+
+  if(!merged.length){
+    historyList.innerHTML = `<div class="history-empty">暂时还没有历史开奖数据</div>`;
+    return;
+  }
+
+  historyList.innerHTML = merged.map(entry => buildHistoryItem(entry)).join("");
 }
 
 function openHistory(){
@@ -1095,6 +1202,8 @@ function openHistory(){
 function closeHistory(){
   historyModal.classList.remove("is-open");
   historyModal.setAttribute("aria-hidden", "true");
+  historyPanel.classList.remove("is-more-view");
+  historyList.classList.remove("history-waterfall");
 }
 
 function ballHtml(color, num, extra = ""){
@@ -1351,7 +1460,13 @@ historyBtn.addEventListener("click", openHistory);
 refreshBtn.addEventListener("click", () => {
   window.location.reload();
 });
+historyBack.addEventListener("click", renderHistory);
 historyClose.addEventListener("click", closeHistory);
+historyList.addEventListener("click", event => {
+  if(event.target.closest("[data-history-more]")){
+    openMoreHistory();
+  }
+});
 historyModal.addEventListener("click", event => {
   if(event.target === historyModal){
     closeHistory();
