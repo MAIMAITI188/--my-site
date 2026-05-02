@@ -231,6 +231,40 @@ h1{
   font-weight:normal;
 }
 
+.refresh-btn{
+  position:absolute;
+  right:28px;
+  bottom:16px;
+  min-width:104px;
+  height:42px;
+  border:1px solid rgba(255,255,255,.78);
+  border-radius:999px;
+  background:linear-gradient(135deg,rgba(255,255,255,.98),rgba(224,255,235,.94));
+  color:#087a3d;
+  font-size:18px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:
+    0 10px 24px rgba(5,101,55,.16),
+    inset 0 1px 0 rgba(255,255,255,.9);
+  transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+.refresh-btn:hover{
+  transform:translateY(-1px);
+  background:linear-gradient(135deg,#fff,#d8ffe8);
+  box-shadow:
+    0 13px 28px rgba(5,101,55,.22),
+    inset 0 1px 0 rgba(255,255,255,.95);
+}
+
+.refresh-btn:active{
+  transform:translateY(0);
+  box-shadow:
+    0 6px 16px rgba(5,101,55,.16),
+    inset 0 1px 0 rgba(255,255,255,.9);
+}
+
 .history-modal{
   position:fixed;
   inset:0;
@@ -430,6 +464,7 @@ h1{
   .plus{width:30px;line-height:90px;font-size:42px;flex:0 0 30px}
   .note{margin-top:14px;font-size:26px;min-height:38px}
   .next-time{font-size:26px}
+  .refresh-btn{right:28px;bottom:16px;height:42px;min-width:104px;font-size:18px}
   .history-panel{
     max-height:92vh;
     border-radius:18px;
@@ -598,12 +633,24 @@ h1{
 .is-embedded .next-time{
   left:10px;
   bottom:8px;
-  right:10px;
+  right:84px;
   font-size:14px;
   text-align:left;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
+}
+
+.is-embedded .refresh-btn{
+  right:10px;
+  bottom:7px;
+  min-width:66px;
+  height:28px;
+  padding:0 12px;
+  font-size:13px;
+  box-shadow:
+    0 5px 12px rgba(5,101,55,.16),
+    inset 0 1px 0 rgba(255,255,255,.9);
 }
 
 .empty-balls .ball{
@@ -644,6 +691,7 @@ h1{
   </div>
   <div class="balls" id="balls"></div>
   <div class="next-time" id="nextTimeText"></div>
+  <button class="refresh-btn" id="refreshBtn" type="button">刷新</button>
 </div>
 
 <div class="history-modal" id="historyModal" aria-hidden="true">
@@ -667,6 +715,7 @@ const nextTimeText = document.getElementById("nextTimeText");
 const countdownText = document.getElementById("countdownText");
 const balls = document.getElementById("balls");
 const historyBtn = document.getElementById("historyBtn");
+const refreshBtn = document.getElementById("refreshBtn");
 const historyModal = document.getElementById("historyModal");
 const historyClose = document.getElementById("historyClose");
 const historyList = document.getElementById("historyList");
@@ -1299,6 +1348,9 @@ setInterval(loadServerData, 15000);
 setInterval(updateCountdown, 1000);
 
 historyBtn.addEventListener("click", openHistory);
+refreshBtn.addEventListener("click", () => {
+  window.location.reload();
+});
 historyClose.addEventListener("click", closeHistory);
 historyModal.addEventListener("click", event => {
   if(event.target === historyModal){
