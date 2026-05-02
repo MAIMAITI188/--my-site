@@ -40,7 +40,14 @@ body{
 .header-inner{
   display:flex;
   align-items:center;
-  justify-content:flex-start;
+  justify-content:space-between;
+  gap:14px;
+}
+
+.header-brand{
+  display:flex;
+  align-items:center;
+  min-width:0;
   gap:14px;
 }
 
@@ -71,6 +78,22 @@ body{
   letter-spacing:0;
   opacity:.9;
   text-align:left;
+}
+
+.chat-link{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:38px;
+  padding:0 14px;
+  border-radius:999px;
+  background:rgba(255,255,255,.92);
+  color:#0d8b46;
+  font-size:15px;
+  font-weight:bold;
+  text-decoration:none;
+  box-shadow:0 8px 22px rgba(0,0,0,.12);
 }
 
 .api-box{
@@ -333,6 +356,9 @@ body{
   .header-inner{
     gap:10px;
   }
+  .header-brand{
+    gap:10px;
+  }
   .header-logo{
     width:44px;
     height:44px;
@@ -340,6 +366,11 @@ body{
   }
   .header-title{
     font-size:22px;
+  }
+  .chat-link{
+    min-height:34px;
+    padding:0 11px;
+    font-size:14px;
   }
   .api-box{height:190px}
   .tool-box{padding:0 var(--site-gap) 14px}
@@ -396,11 +427,14 @@ body{
 <div class="page" id="mainPage">
   <div class="header">
     <div class="header-inner">
-      <img class="header-logo" src="assets/hk-logo.png" alt="香港紫荆花标志">
-      <div>
-        <div class="header-title">新港图库</div>
-        <div class="header-domain">hkxc888.com</div>
+      <div class="header-brand">
+        <img class="header-logo" src="assets/hk-logo.png" alt="香港紫荆花标志">
+        <div>
+          <div class="header-title">新港图库</div>
+          <div class="header-domain">hkxc888.com</div>
+        </div>
       </div>
+      <a class="chat-link" href="chat.html">聊天室</a>
     </div>
   </div>
 

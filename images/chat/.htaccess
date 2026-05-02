@@ -1,0 +1,17 @@
+Options -Indexes
+AddType image/jpeg .jpg .jpeg
+AddType image/png .png
+AddType image/webp .webp
+AddType image/gif .gif
+
+<FilesMatch ".*">
+  SetHandler none
+</FilesMatch>
+
+<FilesMatch "\.(?:jpe?g|png|webp|gif)$">
+  Require all granted
+</FilesMatch>
+
+<FilesMatch "^(?!.*\.(?:jpe?g|png|webp|gif)$).*$">
+  Require all denied
+</FilesMatch>

@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>聊天室管理</title>
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#eef6f0;
+  --card:#fff;
+  --line:#d7eadc;
+  --text:#173322;
+  --muted:#637b6b;
+  --brand:#10a856;
+  --brand-dark:#0b7d40;
+  --danger:#d94a4a;
+  --blue:#2f75e8;
+  --shadow:0 12px 28px rgba(15,75,38,.08);
+}
+body{
+  margin:0;
+  min-height:100vh;
+  background:linear-gradient(180deg,#f8fcf9,var(--bg));
+  color:var(--text);
+  font-family:Arial,"Microsoft YaHei",sans-serif;
+}
+.page{width:min(1180px,100%);margin:0 auto;padding:18px 14px 30px}
+.hero{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:18px 20px;
+  border-radius:18px;
+  background:linear-gradient(135deg,#10a856,#0b7d40);
+  color:#fff;
+  box-shadow:0 18px 38px rgba(11,125,64,.2);
+}
+h1{margin:0;font-size:28px}
+.hero p{margin:6px 0 0;color:rgba(255,255,255,.88);font-size:13px}
+.back{color:#fff;text-decoration:none;font-weight:bold;border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:9px 12px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+.stat{padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--card);box-shadow:var(--shadow)}
+.stat strong{display:block;font-size:24px;color:var(--brand-dark)}
+.stat span{color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:380px minmax(0,1fr);gap:14px;margin-top:14px}
+.card{border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:var(--shadow)}
+.card-pad{padding:16px}
+h2{margin:0 0 12px;font-size:19px}
+.field{margin-bottom:12px}
+label{display:block;margin-bottom:6px;font-size:13px;font-weight:bold;color:#385545}
+input,textarea,select{
+  width:100%;
+  border:1px solid #cbded0;
+  border-radius:9px;
+  background:#fff;
+  color:var(--text);
+  padding:10px 11px;
+  font:inherit;
+  outline:none;
+}
+textarea{min-height:92px;resize:vertical;line-height:1.5}
+.row{display:grid;grid-template-columns:1fr 120px;gap:10px}
+.btn-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+button,.btn{
+  border:0;
+  border-radius:9px;
+  padding:10px 12px;
+  background:var(--brand);
+  color:#fff;
+  font-weight:bold;
+  font-size:14px;
+  font-family:inherit;
+  text-decoration:none;
+  cursor:pointer;
+}
+button.blue,.btn.blue{background:var(--blue)}
+button.gray,.btn.gray{background:#607267}
+button.red{background:var(--danger)}
+.status{min-height:20px;margin-top:10px;color:var(--brand-dark);font-size:13px;font-weight:bold}
+.status.is-error{color:var(--danger)}
+.list{display:grid;gap:10px}
+.item{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  align-items:start;
+  padding:12px;
+  border:1px solid #e2eee4;
+  border-radius:10px;
+  background:#fbfefc;
+}
+.item strong{display:block;margin-bottom:5px}
+.meta{color:var(--muted);font-size:12px;line-height:1.6;word-break:break-all}
+.text{margin-top:6px;white-space:pre-wrap;line-height:1.55}
+.thumb{margin-top:8px;max-width:160px;max-height:110px;border-radius:8px;border:1px solid var(--line);object-fit:contain;background:#f2f7f3}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:680px}
+th,td{padding:10px;border-bottom:1px solid #e4efe6;text-align:left;font-size:13px;vertical-align:top}
+th{color:#385545;background:#f6fbf7}
+.pill{display:inline-flex;padding:4px 8px;border-radius:999px;background:#eaf8ee;color:var(--brand-dark);font-size:12px;font-weight:bold}
+.empty{padding:18px;border:1px dashed #caddce;border-radius:10px;color:var(--muted);text-align:center}
+@media(max-width:860px){
+  .hero{align-items:flex-start;flex-direction:column}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .grid{grid-template-columns:1fr}
+}
+@media(max-width:520px){
+  .stats{grid-template-columns:1fr}
+  .row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<main class="page">
+  <section class="hero">
+    <div>
+      <h1>聊天室管理</h1>
+      <p>管理注册用户、悬浮公告、禁言和 24 小时聊天记录。</p>
+    </div>
+    <a class="back" href="HTadmin.html">返回开奖后台</a>
+  </section>
+
+  <section class="stats">
+    <div class="stat"><strong id="userCount">0</strong><span>注册用户</span></div>
+    <div class="stat"><strong id="messageCount">0</strong><span>24小时消息</span></div>
+    <div class="stat"><strong id="banCount">0</strong><span>有效禁言</span></div>
+    <div class="stat"><strong id="imageCount">0</strong><span>图片消息</span></div>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <div class="card-pad">
+        <h2>电话表导出</h2>
+        <p class="meta">导出注册手机号、ID、头像和注册时间。CSV 可直接用 Excel 打开。</p>
+        <div class="btn-row">
+          <a class="btn blue" href="api/chat-admin.php?action=export-users">导出 CSV 表格</a>
+          <button class="gray" type="button" id="reloadBtn">刷新后台数据</button>
+        </div>
+        <div class="status" id="mainStatus"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-pad">
+        <h2>悬浮公告编辑</h2>
+        <div class="row">
+          <div class="field">
+            <label for="pin1Name">第一条名称</label>
+            <input id="pin1Name" maxlength="18">
+          </div>
+          <div class="field">
+            <label for="pin1Avatar">头像</label>
+            <input id="pin1Avatar" maxlength="8">
+          </div>
+        </div>
+        <div class="field">
+          <label for="pin1Text">第一条文本</label>
+          <textarea id="pin1Text" maxlength="300"></textarea>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="pin2Name">第二条名称</label>
+            <input id="pin2Name" maxlength="18">
+          </div>
+          <div class="field">
+            <label for="pin2Avatar">头像</label>
+            <input id="pin2Avatar" maxlength="8">
+          </div>
+        </div>
+        <div class="field">
+          <label for="pin2Text">第二条文本</label>
+          <textarea id="pin2Text" maxlength="300"></textarea>
+        </div>
+        <button type="button" id="savePinsBtn">保存公告</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <div class="card-pad">
+        <h2>ID 禁言</h2>
+        <div class="field">
+          <label for="muteName">ID 昵称</label>
+          <input id="muteName" maxlength="18" placeholder="填写要禁言的ID">
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="muteReason">原因</label>
+            <input id="muteReason" maxlength="80" value="后台禁言">
+          </div>
+          <div class="field">
+            <label for="muteDays">天数</label>
+            <input id="muteDays" type="number" min="1" max="3650" value="1">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button type="button" id="muteBtn">确认禁言</button>
+          <button class="gray" type="button" id="unmuteBtn">解除禁言</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-pad">
+        <h2>禁言名单</h2>
+        <div class="list" id="banList"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:14px">
+    <div class="card-pad">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px">
+        <h2 style="margin:0">聊天记录</h2>
+        <button class="red" type="button" id="clearMessagesBtn">清空聊天记录</button>
+      </div>
+      <div class="list" id="messageList"></div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:14px">
+    <div class="card-pad">
+      <h2>注册用户</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>手机号</th><th>ID</th><th>头像</th><th>注册时间</th><th>最近更新</th></tr></thead>
+          <tbody id="userRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const API = "api/chat-admin.php";
+const userCount = document.getElementById("userCount");
+const messageCount = document.getElementById("messageCount");
+const banCount = document.getElementById("banCount");
+const imageCount = document.getElementById("imageCount");
+const mainStatus = document.getElementById("mainStatus");
+const reloadBtn = document.getElementById("reloadBtn");
+const savePinsBtn = document.getElementById("savePinsBtn");
+const muteBtn = document.getElementById("muteBtn");
+const unmuteBtn = document.getElementById("unmuteBtn");
+const clearMessagesBtn = document.getElementById("clearMessagesBtn");
+const banList = document.getElementById("banList");
+const messageList = document.getElementById("messageList");
+const userRows = document.getElementById("userRows");
+const pin1Name = document.getElementById("pin1Name");
+const pin1Avatar = document.getElementById("pin1Avatar");
+const pin1Text = document.getElementById("pin1Text");
+const pin2Name = document.getElementById("pin2Name");
+const pin2Avatar = document.getElementById("pin2Avatar");
+const pin2Text = document.getElementById("pin2Text");
+const muteName = document.getElementById("muteName");
+const muteReason = document.getElementById("muteReason");
+const muteDays = document.getElementById("muteDays");
+
+let state = { users:[], messages:[], bans:[], settings:{ pins:[] } };
+
+function escapeHtml(value){
+  return String(value ?? "")
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
+    .replace(/'/g,"&#39;");
+}
+
+function setStatus(message, isError=false){
+  mainStatus.textContent = message || "";
+  mainStatus.classList.toggle("is-error", Boolean(isError));
+}
+
+function formatTime(ms){
+  const value = Number(ms || 0);
+  if(!value) return "-";
+  const date = new Date(value);
+  if(Number.isNaN(date.getTime())) return "-";
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")} ${String(date.getHours()).padStart(2,"0")}:${String(date.getMinutes()).padStart(2,"0")}`;
+}
+
+function formatBanUntil(until){
+  const value = Number(until || 0);
+  if(!value) return "永久";
+  if(value >= 32503680000000) return "永久";
+  return formatTime(value);
+}
+
+async function postAdmin(payload){
+  const response = await fetch(API, {
+    method:"POST",
+    credentials:"same-origin",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify(payload)
+  });
+  const result = await response.json().catch(() => ({}));
+  if(!response.ok || !result.ok){
+    throw new Error(result.error || `HTTP ${response.status}`);
+  }
+  return result;
+}
+
+function fillSettings(settings){
+  const pins = Array.isArray(settings?.pins) ? settings.pins : [];
+  pin1Name.value = pins[0]?.name || "系统";
+  pin1Avatar.value = pins[0]?.avatar || "📢";
+  pin1Text.value = pins[0]?.text || "";
+  pin2Name.value = pins[1]?.name || "小港";
+  pin2Avatar.value = pins[1]?.avatar || "💎";
+  pin2Text.value = pins[1]?.text || "";
+}
+
+function renderStats(){
+  userCount.textContent = state.users.length;
+  messageCount.textContent = state.messages.length;
+  banCount.textContent = state.bans.filter(item => item.active).length;
+  imageCount.textContent = state.messages.filter(item => item.image && item.image.src).length;
+}
+
+function renderUsers(){
+  if(!state.users.length){
+    userRows.innerHTML = `<tr><td colspan="5">暂无注册用户</td></tr>`;
+    return;
+  }
+  userRows.innerHTML = state.users.map(item => `
+    <tr>
+      <td>${escapeHtml(item.phone)}</td>
+      <td>${escapeHtml(item.name)}</td>
+      <td>${escapeHtml(item.avatar || "")}</td>
+      <td>${escapeHtml(formatTime(item.createdAt))}</td>
+      <td>${escapeHtml(formatTime(item.updatedAt))}</td>
+    </tr>
+  `).join("");
+}
+
+function renderBans(){
+  const active = state.bans.filter(item => item.active);
+  if(!active.length){
+    banList.innerHTML = `<div class="empty">暂无有效禁言</div>`;
+    return;
+  }
+  banList.innerHTML = active.map(item => `
+    <article class="item">
+      <div>
+        <strong>${escapeHtml(item.name || item.normalizedName || "-")}</strong>
+        <div class="meta">手机号：${escapeHtml(item.phone || "-")}</div>
+        <div class="meta">原因：${escapeHtml(item.reason || "-")}</div>
+        <div class="meta">到期：${escapeHtml(formatBanUntil(item.until))}</div>
+      </div>
+      <button class="gray" type="button" data-unmute="${escapeHtml(item.name || item.normalizedName)}">解禁</button>
+    </article>
+  `).join("");
+}
+
+function renderMessages(){
+  if(!state.messages.length){
+    messageList.innerHTML = `<div class="empty">当前没有聊天记录</div>`;
+    return;
+  }
+  messageList.innerHTML = state.messages.slice().reverse().map(item => {
+    const image = item.image && item.image.src
+      ? `<img class="thumb" src="../${escapeHtml(item.image.src)}" alt="聊天图片">`
+      : "";
+    return `
+      <article class="item">
+        <div>
+          <strong>${escapeHtml(item.avatar || "")} ${escapeHtml(item.name || "-")} <span class="pill">${escapeHtml(formatTime(item.createdAt))}</span></strong>
+          <div class="meta">ID：${escapeHtml(item.id || "-")}　手机号：${escapeHtml(item.phone || "-")}</div>
+          ${item.text ? `<div class="text">${escapeHtml(item.text)}</div>` : ""}
+          ${image}
+        </div>
+        <button class="red" type="button" data-delete="${escapeHtml(item.id || "")}">删除</button>
+      </article>
+    `;
+  }).join("");
+}
+
+function renderAll(){
+  fillSettings(state.settings);
+  renderStats();
+  renderUsers();
+  renderBans();
+  renderMessages();
+}
+
+async function loadAdmin(){
+  try{
+    setStatus("正在读取聊天室后台数据...");
+    const response = await fetch(`${API}?v=${Date.now()}`, { credentials:"same-origin", cache:"no-store" });
+    const result = await response.json();
+    if(!response.ok || !result.ok){
+      throw new Error(result.error || `HTTP ${response.status}`);
+    }
+    state = result;
+    renderAll();
+    setStatus("数据已刷新。");
+  }catch(error){
+    setStatus(`读取失败：${error.message}`, true);
+  }
+}
+
+savePinsBtn.addEventListener("click", async () => {
+  try{
+    await postAdmin({
+      action:"save-settings",
+      pins:[
+        { name:pin1Name.value, avatar:pin1Avatar.value, text:pin1Text.value },
+        { name:pin2Name.value, avatar:pin2Avatar.value, text:pin2Text.value }
+      ]
+    });
+    setStatus("公告已保存，前台刷新消息后会更新。");
+    await loadAdmin();
+  }catch(error){
+    setStatus(`保存公告失败：${error.message}`, true);
+  }
+});
+
+muteBtn.addEventListener("click", async () => {
+  try{
+    await postAdmin({ action:"mute", name:muteName.value, days:muteDays.value, reason:muteReason.value });
+    setStatus("已禁言该 ID。");
+    await loadAdmin();
+  }catch(error){
+    setStatus(`禁言失败：${error.message}`, true);
+  }
+});
+
+unmuteBtn.addEventListener("click", async () => {
+  try{
+    await postAdmin({ action:"unmute", name:muteName.value });
+    setStatus("已解除该 ID 的禁言。");
+    await loadAdmin();
+  }catch(error){
+    setStatus(`解禁失败：${error.message}`, true);
+  }
+});
+
+banList.addEventListener("click", async event => {
+  const name = event.target?.dataset?.unmute;
+  if(!name) return;
+  muteName.value = name;
+  unmuteBtn.click();
+});
+
+messageList.addEventListener("click", async event => {
+  const id = event.target?.dataset?.delete;
+  if(!id) return;
+  if(!confirm("确认删除这条聊天记录？")) return;
+  try{
+    await postAdmin({ action:"delete-message", id });
+    setStatus("聊天记录已删除。");
+    await loadAdmin();
+  }catch(error){
+    setStatus(`删除失败：${error.message}`, true);
+  }
+});
+
+clearMessagesBtn.addEventListener("click", async () => {
+  if(!confirm("确认清空所有 24 小时聊天记录？图片也会一起删除。")) return;
+  try{
+    await postAdmin({ action:"clear-messages" });
+    setStatus("聊天记录已清空。");
+    await loadAdmin();
+  }catch(error){
+    setStatus(`清空失败：${error.message}`, true);
+  }
+});
+
+reloadBtn.addEventListener("click", loadAdmin);
+loadAdmin();
+</script>
+</body>
+</html>

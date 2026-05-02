@@ -3,72 +3,273 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="referrer" content="strict-origin-when-cross-origin">
-<title>聊天室测试</title>
+<title>聊天室模板预览</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#edf2f0;color:#163326;font-family:Arial,"Microsoft YaHei",sans-serif}
-.chat-app{max-width:640px;min-height:100vh;margin:0 auto;display:flex;flex-direction:column;background:#f8fbf9}
-.chat-head{padding:14px 16px;background:#10a95b;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+html{min-height:100%}
+.chat-page{min-height:100%;margin:0;background:#eef1f5;color:#163322;font-family:Arial,"Microsoft YaHei",sans-serif}
+.chat-app,.chat-app *{box-sizing:border-box}
+.chat-app{
+  --chat-width:var(--site-width,640px);
+  --chat-brand:var(--brand,#10c463);
+  --chat-brand-dark:var(--brand-dark,#0d9d4f);
+  --chat-bg:var(--bg,#edf6ef);
+  --chat-card:#ffffff;
+  --chat-line:#d6ead8;
+  --chat-text:#163322;
+  --chat-muted:#5f7b69;
+  --chat-shadow:0 14px 34px rgba(17,63,34,.08);
+  max-width:var(--chat-width);
+  min-height:100vh;
+  min-height:100dvh;
+  margin:0 auto;
+  background:#f8fbf9;
+  color:var(--chat-text);
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  overflow:hidden;
+}
+.chat-head{
+  display:grid;
+  grid-template-columns:42px 1fr 42px;
+  align-items:center;
+  gap:8px;
+  padding:12px;
+  background:linear-gradient(135deg,var(--chat-brand),var(--chat-brand-dark));
+  color:#fff;
+}
+.chat-head-main{text-align:center;min-width:0}
 .chat-title{margin:0;font-size:21px;line-height:1.2}
-.chat-subtitle{margin-top:4px;font-size:13px;opacity:.86}
-.chat-list{flex:1;overflow:auto;padding:14px 12px 18px}
-.message{margin:0 0 10px;padding:10px 12px;border-radius:10px;background:#fff;border:1px solid #dfece5;box-shadow:0 2px 8px rgba(10,60,35,.05)}
-.message-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;color:#5c7567;font-size:12px}
-.message-name{color:#0b8a49;font-weight:bold;font-size:14px}
-.message-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.48;font-size:15px}
-.chat-empty,.chat-error{margin:20px 0;padding:18px;border:1px dashed #b9d2c4;border-radius:12px;text-align:center;color:#6c8377;background:#fff}
-.chat-error{color:#a33232;border-color:#edc3c3}
-.chat-form{padding:12px;background:#fff;border-top:1px solid #dcebe3}
-.form-row{display:grid;grid-template-columns:120px 1fr auto;gap:8px}
-.chat-input,.chat-text{width:100%;border:1px solid #c8dbd1;border-radius:9px;background:#f9fcfa;color:#163326;font:inherit;outline:none}
-.chat-input{height:42px;padding:0 11px}
-.chat-text{min-height:42px;max-height:110px;padding:10px 11px;resize:vertical}
-.send-btn{height:42px;min-width:74px;border:0;border-radius:9px;background:#10a95b;color:#fff;font-size:15px;font-weight:bold;cursor:pointer}
-.send-btn:disabled{opacity:.58;cursor:not-allowed}
-.status{min-height:18px;margin-top:8px;color:#6b7f72;font-size:12px}
-.status.is-error{color:#bb2d2d}
+.chat-sub{margin-top:4px;font-size:13px;line-height:1.35;opacity:.86}
+.chat-back{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:42px;
+  height:42px;
+  min-width:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.18);
+  color:#fff;
+  text-decoration:none;
+  font-size:23px;
+  font-weight:bold;
+}
+.chat-switch{
+  width:42px;
+  min-width:0!important;
+  padding:0!important;
+  border-radius:50%!important;
+  background:rgba(255,255,255,.18)!important;
+  color:#fff!important;
+  font-size:12px!important;
+}
+.chat-list{flex:1;overflow:auto;padding:14px 12px 18px;background:linear-gradient(180deg,#f8fbf9,var(--chat-bg))}
+.chat-pins{
+  flex:0 0 auto;
+  padding:10px 12px;
+  background:#f8fbf9;
+  border-bottom:1px solid var(--chat-line);
+  box-shadow:0 4px 14px rgba(10,60,35,.06);
+  z-index:2;
+}
+.chat-pin{
+  margin:0 0 8px;
+  padding:9px 11px;
+  border-radius:12px;
+  background:#fff;
+  border:1px solid var(--chat-line);
+  box-shadow:0 2px 8px rgba(10,60,35,.05);
+}
+.chat-pin:last-child{margin-bottom:0}
+.chat-pin .chat-meta{margin-bottom:5px}
+.chat-msg{max-width:82%;margin:0 0 10px;padding:10px 12px;border-radius:12px;background:var(--chat-card);border:1px solid var(--chat-line);box-shadow:0 2px 8px rgba(10,60,35,.05)}
+.chat-msg.is-me{margin-left:auto;background:#ddf4e4;border-color:#bce8cf}
+.chat-meta{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px;color:var(--chat-muted);font-size:12px}
+.chat-who{display:flex;align-items:center;gap:6px;min-width:0}
+.chat-avatar{font-size:18px;line-height:1}
+.chat-name{color:var(--chat-brand-dark);font-weight:bold;font-size:14px}
+.chat-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5;font-size:15px}
+.chat-image-link{display:block;margin-top:8px;line-height:0}
+.chat-image{display:block;max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--chat-line);object-fit:contain;background:#f4faf6}
+.chat-bar{padding:10px;background:var(--chat-card);border-top:1px solid var(--chat-line)}
+.chat-tools{display:none;grid-template-columns:repeat(8,1fr);gap:6px;margin-bottom:8px;padding:8px;border:1px solid var(--chat-line);border-radius:12px;background:#f7fbf8}
+.chat-tools.is-open{display:grid}
+.chat-tool{height:34px;min-width:0;border:0;border-radius:8px;background:#fff;color:var(--chat-text);font-size:20px}
+.chat-row{display:grid;grid-template-columns:42px 42px 1fr auto;gap:8px}
+.chat-app input,.chat-app textarea{
+  width:100%;
+  border:1px solid #c8dbd1;
+  border-radius:9px;
+  background:#f9fcfa;
+  color:var(--chat-text);
+  font:inherit;
+  outline:none;
+}
+.chat-app input{height:42px;padding:0 8px}
+.chat-app textarea{height:42px;max-height:110px;padding:10px;resize:vertical}
+.chat-app button{height:42px;min-width:0;border:0;border-radius:9px;background:var(--chat-brand);color:#fff;font-weight:bold;font-size:15px;font-family:inherit}
+.chat-row > button[type="submit"]{min-width:70px}
+.chat-emoji-btn,.chat-image-btn{
+  min-width:42px!important;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:#eef7f0!important;
+  color:#355947!important;
+  font-size:21px!important;
+  line-height:1!important;
+}
+.chat-file-input{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.chat-hint{min-height:18px;margin-top:8px;color:var(--chat-muted);font-size:12px;line-height:1.45}
+.chat-screen{position:absolute;inset:0;z-index:10;display:none;background:#f8fbf9}
+.chat-screen.is-open{display:flex;flex-direction:column}
+.chat-screen-panel{flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;padding:18px;background:linear-gradient(180deg,#f6fbf7,var(--chat-bg))}
+.chat-card{width:min(420px,100%);padding:20px;border-radius:14px;background:var(--chat-card);border:1px solid var(--chat-line);box-shadow:var(--chat-shadow)}
+.chat-card h2{margin:0 0 8px;font-size:23px;line-height:1.25}
+.chat-card p{margin:0 0 16px;color:var(--chat-muted);font-size:14px;line-height:1.6}
+.chat-field{margin-bottom:12px}
+.chat-label{display:block;margin:0 0 6px;color:#385545;font-size:13px;font-weight:bold}
+.chat-avatar-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:7px;margin-bottom:14px}
+.chat-avatar-choice{min-width:0;height:38px;border:1px solid #d6e7de;border-radius:10px;background:#f8fcfa;color:var(--chat-text);font-size:21px}
+.chat-avatar-choice.is-selected{border-color:var(--chat-brand);background:#ddf4e4;box-shadow:0 0 0 2px rgba(16,196,99,.12)}
+.chat-primary{width:100%;height:44px!important;border-radius:10px!important}
+.chat-secondary{width:100%;height:42px!important;margin-top:8px;border:1px solid var(--chat-line)!important;background:#f8fcfa!important;color:#385545!important;border-radius:10px!important}
 @media(max-width:520px){
-  .chat-head{padding:12px}
   .chat-title{font-size:19px}
+  .chat-pins{padding:9px 10px}
   .chat-list{padding:12px 10px 14px}
-  .chat-form{padding:10px}
-  .form-row{grid-template-columns:1fr auto}
-  .chat-input{grid-column:1 / -1}
+  .chat-tools{grid-template-columns:repeat(7,1fr)}
+  .chat-row{grid-template-columns:42px 42px 1fr auto}
+  .chat-avatar-grid{grid-template-columns:repeat(6,1fr)}
+  .chat-msg{max-width:90%}
 }
 </style>
-<script defer src="https://umami.hkxc888.com/script.js" data-website-id="9c54c717-a529-46d8-839e-5e3badee27f7"></script>
 </head>
-<body>
+<body class="chat-page">
 <main class="chat-app">
   <header class="chat-head">
-    <h1 class="chat-title">聊天室测试</h1>
-    <div class="chat-subtitle">轻量留言版，每 3 秒自动刷新</div>
-  </header>
-  <section class="chat-list" id="chatList" aria-live="polite">
-    <div class="chat-empty">正在读取消息...</div>
-  </section>
-  <form class="chat-form" id="chatForm" autocomplete="off">
-    <div class="form-row">
-      <input class="chat-input" id="nameInput" maxlength="18" placeholder="昵称" required>
-      <textarea class="chat-text" id="messageInput" maxlength="300" placeholder="输入消息" required></textarea>
-      <button class="send-btn" id="sendBtn" type="submit">发送</button>
+    <a class="chat-back" href="WZZT.html" aria-label="返回主页">‹</a>
+    <div class="chat-head-main">
+      <h1 class="chat-title">聊天室模板</h1>
+      <div class="chat-sub" id="subtitle">注册后进入聊天室，ID 全站唯一</div>
     </div>
-    <div class="status" id="statusText"></div>
+    <button class="chat-switch" id="settingsBtn" type="button" title="设置头像和ID">设置</button>
+  </header>
+  <section class="chat-pins" id="pins" aria-label="聊天室公告"></section>
+  <section class="chat-list" id="list"></section>
+  <form class="chat-bar" id="form">
+    <div class="chat-tools" id="tools"></div>
+    <div class="chat-row">
+      <button class="chat-emoji-btn" id="emojiBtn" type="button">☺</button>
+      <button class="chat-image-btn" id="imageBtn" type="button" title="上传图片" aria-label="上传图片">+</button>
+      <textarea id="text" maxlength="300" placeholder="输入消息"></textarea>
+      <button type="submit">发送</button>
+    </div>
+    <input class="chat-file-input" id="imageInput" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+    <div class="chat-hint" id="hint">点 ☺ 可以选择表情。</div>
   </form>
+
+  <section class="chat-screen is-open" id="registerScreen">
+    <header class="chat-head">
+      <a class="chat-back" href="WZZT.html" aria-label="返回主页">‹</a>
+      <div class="chat-head-main">
+        <h1 class="chat-title">注册聊天室</h1>
+        <div class="chat-sub">填写资料后进入聊天</div>
+      </div>
+      <span></span>
+    </header>
+    <div class="chat-screen-panel">
+      <form class="chat-card" id="registerForm">
+        <h2>注册进入聊天室</h2>
+        <p>填写 11 位手机号和 ID 昵称即可进入。</p>
+        <div class="chat-field">
+          <label class="chat-label" for="phone">手机号</label>
+          <input id="phone" inputmode="numeric" maxlength="11" placeholder="请输入11位手机号">
+        </div>
+        <div class="chat-field">
+          <label class="chat-label" for="nickname">ID 昵称</label>
+          <input id="nickname" maxlength="18" placeholder="请输入唯一ID昵称">
+        </div>
+        <div class="chat-field">
+          <div class="chat-label">选择头像</div>
+          <div class="chat-avatar-grid" id="avatarChoices"></div>
+        </div>
+        <button class="chat-primary" type="submit">进入聊天室</button>
+        <div class="chat-hint" id="registerHint">手机号仅用于站长后台留存，不会展示在聊天页面。</div>
+      </form>
+    </div>
+  </section>
+
+  <section class="chat-screen" id="settingsScreen">
+    <header class="chat-head">
+      <a class="chat-back" href="WZZT.html" aria-label="返回主页">‹</a>
+      <div class="chat-head-main">
+        <h1 class="chat-title">设置资料</h1>
+        <div class="chat-sub">头像和 ID 三天可以修改一次</div>
+      </div>
+      <span></span>
+    </header>
+    <div class="chat-screen-panel">
+      <form class="chat-card" id="settingsForm">
+        <h2>设置头像和 ID</h2>
+        <p>保存后需等待 3 天才能再次修改。</p>
+        <div class="chat-field">
+          <label class="chat-label" for="settingsNickname">ID 昵称</label>
+          <input id="settingsNickname" maxlength="18" placeholder="请输入唯一ID昵称">
+        </div>
+        <div class="chat-field">
+          <div class="chat-label">选择头像</div>
+          <div class="chat-avatar-grid" id="settingsAvatarChoices"></div>
+        </div>
+        <button class="chat-primary" type="submit">保存设置</button>
+        <button class="chat-secondary" id="closeSettingsBtn" type="button">返回聊天室</button>
+        <div class="chat-hint" id="settingsHint">头像和 ID 会显示在聊天页面。</div>
+      </form>
+    </div>
+  </section>
 </main>
 <script>
+const list = document.getElementById("list");
+const form = document.getElementById("form");
+const textInput = document.getElementById("text");
+const emojiBtn = document.getElementById("emojiBtn");
+const imageBtn = document.getElementById("imageBtn");
+const imageInput = document.getElementById("imageInput");
+const tools = document.getElementById("tools");
+const pins = document.getElementById("pins");
+const hint = document.getElementById("hint");
+const subtitle = document.getElementById("subtitle");
+const settingsBtn = document.getElementById("settingsBtn");
+const registerScreen = document.getElementById("registerScreen");
+const registerForm = document.getElementById("registerForm");
+const phoneInput = document.getElementById("phone");
+const nicknameInput = document.getElementById("nickname");
+const avatarChoices = document.getElementById("avatarChoices");
+const registerHint = document.getElementById("registerHint");
+const settingsScreen = document.getElementById("settingsScreen");
+const settingsForm = document.getElementById("settingsForm");
+const settingsNicknameInput = document.getElementById("settingsNickname");
+const settingsAvatarChoices = document.getElementById("settingsAvatarChoices");
+const settingsHint = document.getElementById("settingsHint");
+const closeSettingsBtn = document.getElementById("closeSettingsBtn");
 const CHAT_API = "api/chat.php";
-const chatList = document.getElementById("chatList");
-const chatForm = document.getElementById("chatForm");
-const nameInput = document.getElementById("nameInput");
-const messageInput = document.getElementById("messageInput");
-const sendBtn = document.getElementById("sendBtn");
-const statusText = document.getElementById("statusText");
+const userKey = "chatTemplateUserV2";
+const profileCooldownMs = 3 * 24 * 60 * 60 * 1000;
+const maxImageBytes = 5 * 1024 * 1024;
+const allowedImageTypes = ["image/jpeg","image/png","image/webp","image/gif"];
+const avatars = ["😀","😎","🤩","🥳","🤑","😇","💎","💵","💰","🧧","👑","🏆","⭐","🍀","🔥","🚀","🌹","🎯","🐲","🦁","🐯","🦊","🐼","🦄"];
+const emojis = ["😀","😁","😂","🤣","😊","😍","😎","🤔","😭","😡","👍","👎","👏","🙏","💪","🤝","🎉","🔥","❤️","🌹","🍀","💎","💵","💰","🧧","🏆","🎯","⭐","✅","❌","🚀","📢"];
+let user = null;
+let selectedAvatar = avatars[0];
+let settingsSelectedAvatar = avatars[0];
+let messages = [];
+let pinMessages = [
+  {name:"系统", avatar:"📢", text:"欢迎来到聊天室模板。"},
+  {name:"小港", avatar:"💎", text:"这里可以放公告、闲聊、开奖讨论。"}
+];
 let lastMessageId = "";
-let loading = false;
-
-nameInput.value = localStorage.getItem("chat_name") || "";
+let loadingMessages = false;
 
 function escapeHtml(value){
   return String(value ?? "")
@@ -77,84 +278,377 @@ function escapeHtml(value){
     .replace(/'/g,"&#39;");
 }
 
-function formatTime(timestamp){
-  const date = new Date(Number(timestamp));
-  if(Number.isNaN(date.getTime())) return "";
+function time(){
+  const date = new Date();
   return `${String(date.getHours()).padStart(2,"0")}:${String(date.getMinutes()).padStart(2,"0")}`;
 }
 
-function setStatus(message,isError=false){
-  statusText.textContent = message || "";
-  statusText.classList.toggle("is-error", Boolean(isError));
+function readSavedJson(key, fallback){
+  try{
+    return JSON.parse(localStorage.getItem(key)) || fallback;
+  }catch(error){
+    return fallback;
+  }
 }
 
-function renderMessages(messages){
-  if(!Array.isArray(messages) || !messages.length){
-    chatList.innerHTML = `<div class="chat-empty">还没有消息，发第一条试试。</div>`;
+async function postChat(payload){
+  const response = await fetch(CHAT_API, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify(payload)
+  });
+  const result = await response.json().catch(() => ({}));
+  if(!response.ok || !result.ok){
+    const error = new Error(result.error || "request_failed");
+    error.payload = result;
+    throw error;
+  }
+  return result;
+}
+
+async function uploadImage(file, text){
+  const formData = new FormData();
+  formData.append("action", "image");
+  formData.append("phone", user.phone);
+  formData.append("text", text);
+  formData.append("image", file);
+  const response = await fetch(CHAT_API, {
+    method:"POST",
+    body:formData
+  });
+  const result = await response.json().catch(() => ({}));
+  if(!response.ok || !result.ok){
+    const error = new Error(result.error || "request_failed");
+    error.payload = result;
+    throw error;
+  }
+  return result;
+}
+
+function openChat(nextUser){
+  user = {...nextUser, avatar:nextUser.avatar || avatars[0]};
+  registerScreen.classList.remove("is-open");
+  settingsScreen.classList.remove("is-open");
+  subtitle.textContent = `${user.name}，欢迎进入聊天室`;
+  hint.textContent = "已注册，可以发送消息。";
+  settingsBtn.textContent = "设置";
+}
+
+function openRegister(){
+  registerScreen.classList.add("is-open");
+  settingsScreen.classList.remove("is-open");
+  registerHint.textContent = "手机号仅用于站长后台留存，不会展示在聊天页面。";
+  phoneInput.focus();
+}
+
+function openSettings(){
+  if(!user){
+    openRegister();
     return;
   }
-  chatList.innerHTML = messages.map(item => `
-    <article class="message">
-      <div class="message-meta">
-        <span class="message-name">${escapeHtml(item.name || "游客")}</span>
-        <time>${escapeHtml(formatTime(item.createdAt))}</time>
+  settingsSelectedAvatar = user.avatar || avatars[0];
+  settingsNicknameInput.value = user.name || "";
+  renderAvatarChoices(settingsAvatarChoices, settingsSelectedAvatar, avatar => {
+    settingsSelectedAvatar = avatar;
+  });
+  settingsScreen.classList.add("is-open");
+  registerScreen.classList.remove("is-open");
+  settingsHint.textContent = nextProfileChangeText();
+  settingsNicknameInput.focus();
+}
+
+function closeSettings(){
+  settingsScreen.classList.remove("is-open");
+}
+
+function formatMessageTime(timestamp){
+  const date = new Date(Number(timestamp));
+  if(Number.isNaN(date.getTime())) return time();
+  return `${String(date.getHours()).padStart(2,"0")}:${String(date.getMinutes()).padStart(2,"0")}`;
+}
+
+function render(){
+  renderPins();
+  if(!messages.length){
+    list.innerHTML = "";
+    return;
+  }
+  list.innerHTML = messages.map(item => {
+    const image = item.image && item.image.src ? `
+      <a class="chat-image-link" href="${escapeHtml(item.image.src)}" target="_blank" rel="noopener noreferrer">
+        <img class="chat-image" src="${escapeHtml(item.image.src)}" alt="聊天图片" loading="lazy">
+      </a>
+    ` : "";
+    return `
+      <article class="chat-msg ${item.me ? "is-me" : ""}">
+        <div class="chat-meta">
+          <span class="chat-who"><span class="chat-avatar">${escapeHtml(item.avatar || "😀")}</span><span class="chat-name">${escapeHtml(item.name)}</span></span>
+          <span>${escapeHtml(item.createdAt ? formatMessageTime(item.createdAt) : time())}</span>
+        </div>
+        ${item.text ? `<div class="chat-text">${escapeHtml(item.text)}</div>` : ""}
+        ${image}
+      </article>
+    `;
+  }).join("");
+  list.scrollTop = list.scrollHeight;
+}
+
+function renderPins(){
+  pins.innerHTML = pinMessages.map(item => `
+    <article class="chat-pin">
+      <div class="chat-meta">
+        <span class="chat-who"><span class="chat-avatar">${escapeHtml(item.avatar || "📢")}</span><span class="chat-name">${escapeHtml(item.name || "系统")}</span></span>
       </div>
-      <div class="message-text">${escapeHtml(item.text || "")}</div>
+      <div class="chat-text">${escapeHtml(item.text || "")}</div>
     </article>
   `).join("");
 }
 
 async function loadMessages(forceScroll=false){
-  if(loading) return;
-  loading = true;
+  if(loadingMessages) return;
+  loadingMessages = true;
   try{
     const response = await fetch(`${CHAT_API}?v=${Date.now()}`, { cache:"no-store" });
     if(!response.ok) throw new Error("HTTP " + response.status);
     const data = await response.json();
-    const messages = Array.isArray(data.messages) ? data.messages : [];
-    const newest = messages.length ? String(messages[messages.length - 1].id || "") : "";
+    if(data.settings && Array.isArray(data.settings.pins)){
+      pinMessages = data.settings.pins.slice(0, 2);
+    }
+    const nextMessages = Array.isArray(data.messages) ? data.messages : [];
+    const newest = nextMessages.length ? String(nextMessages[nextMessages.length - 1].id || "") : "";
     const shouldScroll = forceScroll || newest !== lastMessageId;
     lastMessageId = newest;
-    renderMessages(messages);
-    if(shouldScroll) chatList.scrollTop = chatList.scrollHeight;
+    messages = nextMessages.map(item => ({
+      ...item,
+      me:user && item.name === user.name
+    }));
+    render();
+    if(shouldScroll) list.scrollTop = list.scrollHeight;
   }catch(error){
-    chatList.innerHTML = `<div class="chat-error">聊天室读取失败，请稍后刷新。</div>`;
+    hint.textContent = "消息读取失败，请稍后刷新。";
   }finally{
-    loading = false;
+    loadingMessages = false;
   }
 }
 
-chatForm.addEventListener("submit", async event => {
-  event.preventDefault();
-  const name = nameInput.value.trim() || "游客";
-  const text = messageInput.value.trim();
-  if(!text){
-    setStatus("消息不能为空。", true);
+function renderTools(){
+  tools.innerHTML = emojis.map(item => `<button class="chat-tool" type="button">${escapeHtml(item)}</button>`).join("");
+  tools.querySelectorAll(".chat-tool").forEach(button => {
+    button.addEventListener("click", () => {
+      textInput.value += button.textContent;
+      textInput.focus();
+    });
+  });
+}
+
+function renderAvatarChoices(container, currentAvatar, onSelect){
+  container.innerHTML = avatars.map(item => (
+    `<button class="chat-avatar-choice ${item === currentAvatar ? "is-selected" : ""}" type="button" data-avatar="${escapeHtml(item)}">${escapeHtml(item)}</button>`
+  )).join("");
+  container.querySelectorAll(".chat-avatar-choice").forEach(button => {
+    button.addEventListener("click", () => {
+      const nextAvatar = button.dataset.avatar || avatars[0];
+      onSelect(nextAvatar);
+      container.querySelectorAll(".chat-avatar-choice").forEach(item => item.classList.remove("is-selected"));
+      button.classList.add("is-selected");
+    });
+  });
+}
+
+function profileWaitMs(){
+  const lastChangedAt = Number(user?.profileChangedAt || 0);
+  return Math.max(0, profileCooldownMs - (Date.now() - lastChangedAt));
+}
+
+function formatWait(ms){
+  const dayMs = 24 * 60 * 60 * 1000;
+  if(ms >= dayMs) return `${Math.ceil(ms / dayMs)} 天`;
+  const hours = Math.ceil(ms / (60 * 60 * 1000));
+  return `${Math.max(1, hours)} 小时`;
+}
+
+function nextProfileChangeText(){
+  const waitMs = profileWaitMs();
+  return waitMs ? `还需等待 ${formatWait(waitMs)} 才能再次修改。` : "现在可以修改头像和 ID。";
+}
+
+function errorText(error){
+  const message = String(error?.message || "");
+  if(message === "id_taken") return "这个 ID 已被注册，请换一个。";
+  if(message === "invalid_phone") return "请输入 11 位手机号。";
+  if(message === "empty_name") return "请输入 ID 昵称。";
+  if(message === "empty_message") return "先输入消息。";
+  if(message === "image_required") return "请选择图片。";
+  if(message === "image_too_large") return "图片不能超过 5MB。";
+  if(message === "invalid_image_type") return "只支持 JPG、PNG、WEBP、GIF 图片。";
+  if(message === "invalid_image") return "图片文件无效，请换一张。";
+  if(message === "upload_failed" || message === "upload_save_failed") return "图片上传失败，请稍后再试。";
+  if(message === "profile_cooldown") return `还需等待 ${formatWait(error.payload?.waitMs || profileCooldownMs)} 才能再次修改。`;
+  if(message === "too_many_requests") return "发送太快了，等几秒再试。";
+  if(message === "duplicate_message") return "重复消息太快了，稍后再发。";
+  if(message === "user_not_registered") return "请先完成注册。";
+  if(message === "muted") return `账号已被禁言${error.payload?.until ? `，到 ${formatDateTime(error.payload.until)} 解除` : ""}。`;
+  if(message === "permanent_ban") return "账号已被永久禁言，无法使用聊天室。";
+  return "操作失败，请稍后再试。";
+}
+
+function formatDateTime(ms){
+  const date = new Date(Number(ms || 0));
+  if(Number.isNaN(date.getTime())) return "";
+  return `${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")} ${String(date.getHours()).padStart(2,"0")}:${String(date.getMinutes()).padStart(2,"0")}`;
+}
+
+function handleAccountBlocked(error){
+  const message = String(error?.message || "");
+  if(message === "user_not_registered" || message === "permanent_ban"){
+    localStorage.removeItem(userKey);
+    user = null;
+    if(message === "permanent_ban"){
+      registerScreen.classList.add("is-open");
+      settingsScreen.classList.remove("is-open");
+      registerHint.textContent = "账号已被永久禁言，无法使用聊天室。";
+    }else{
+      openRegister();
+    }
+  }
+}
+
+emojiBtn.addEventListener("click", () => {
+  tools.classList.toggle("is-open");
+});
+
+imageBtn.addEventListener("click", () => {
+  if(!user){
+    openRegister();
     return;
   }
-  sendBtn.disabled = true;
-  setStatus("发送中...");
+  imageInput.click();
+});
+
+imageInput.addEventListener("change", async () => {
+  const file = imageInput.files && imageInput.files[0];
+  imageInput.value = "";
+  if(!file) return;
+  if(!allowedImageTypes.includes(file.type)){
+    hint.textContent = "只支持 JPG、PNG、WEBP、GIF 图片。";
+    return;
+  }
+  if(file.size > maxImageBytes){
+    hint.textContent = "图片不能超过 5MB。";
+    return;
+  }
+  if(!user){
+    openRegister();
+    return;
+  }
+  const text = textInput.value.trim();
+  hint.textContent = "图片上传中...";
+  imageBtn.disabled = true;
   try{
-    const response = await fetch(CHAT_API, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify({ name, text })
-    });
-    const result = await response.json().catch(() => ({}));
-    if(!response.ok || !result.ok) throw new Error(result.error || "send_failed");
-    localStorage.setItem("chat_name", name);
-    messageInput.value = "";
-    setStatus("已发送。");
+    await uploadImage(file, text);
+    textInput.value = "";
+    hint.textContent = "图片已发送。";
     await loadMessages(true);
   }catch(error){
-    const tooFast = String(error.message || "").includes("too_many_requests");
-    setStatus(tooFast ? "发送太快了，等几秒再试。" : "发送失败，请稍后再试。", true);
+    hint.textContent = errorText(error);
+    handleAccountBlocked(error);
   }finally{
-    sendBtn.disabled = false;
-    messageInput.focus();
+    imageBtn.disabled = false;
   }
 });
 
+settingsBtn.addEventListener("click", () => {
+  openSettings();
+});
+
+closeSettingsBtn.addEventListener("click", () => {
+  closeSettings();
+});
+
+registerForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  const phone = phoneInput.value.trim();
+  const nickname = nicknameInput.value.trim();
+  if(!/^\d{11}$/.test(phone)){
+    registerHint.textContent = "请输入 11 位手机号。";
+    return;
+  }
+  if(!nickname){
+    registerHint.textContent = "请输入 ID 昵称。";
+    return;
+  }
+  registerHint.textContent = "正在注册...";
+  try{
+    const result = await postChat({ action:"register", phone, name:nickname, avatar:selectedAvatar });
+    localStorage.setItem(userKey, JSON.stringify(result.user));
+    openChat(result.user);
+    await loadMessages(true);
+  }catch(error){
+    registerHint.textContent = errorText(error);
+  }
+});
+
+settingsForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  if(!user){
+    openRegister();
+    return;
+  }
+  const waitMs = profileWaitMs();
+  if(waitMs){
+    settingsHint.textContent = `还需等待 ${formatWait(waitMs)} 才能再次修改。`;
+    return;
+  }
+  const nickname = settingsNicknameInput.value.trim();
+  if(!nickname){
+    settingsHint.textContent = "请输入 ID 昵称。";
+    return;
+  }
+  settingsHint.textContent = "正在保存...";
+  try{
+    const result = await postChat({ action:"profile", phone:user.phone, name:nickname, avatar:settingsSelectedAvatar });
+    localStorage.setItem(userKey, JSON.stringify(result.user));
+    openChat(result.user);
+    hint.textContent = "设置已保存，3 天后可再次修改头像和 ID。";
+    await loadMessages(true);
+  }catch(error){
+    settingsHint.textContent = errorText(error);
+    handleAccountBlocked(error);
+  }
+});
+
+form.addEventListener("submit", async event => {
+  event.preventDefault();
+  if(!user){
+    openRegister();
+    return;
+  }
+  const text = textInput.value.trim();
+  if(!text){
+    hint.textContent = "先输入消息。";
+    return;
+  }
+  hint.textContent = "发送中...";
+  try{
+    await postChat({ action:"message", phone:user.phone, text });
+    textInput.value = "";
+    hint.textContent = "已发送。";
+    await loadMessages(true);
+  }catch(error){
+    hint.textContent = errorText(error);
+    handleAccountBlocked(error);
+  }
+});
+
+renderTools();
+renderAvatarChoices(avatarChoices, selectedAvatar, avatar => {
+  selectedAvatar = avatar;
+});
+render();
+const savedUser = readSavedJson(userKey, null);
+if(savedUser && savedUser.phone && savedUser.name){
+  openChat(savedUser);
+}
 loadMessages(true);
 setInterval(loadMessages, 3000);
 </script>

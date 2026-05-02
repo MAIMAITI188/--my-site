@@ -293,6 +293,8 @@ body{
   align-items:center;
   justify-content:center;
   position:relative;
+  z-index:1;
+  overflow:hidden;
   color:#111;
   font-size:22px;
   font-weight:900;
@@ -340,6 +342,7 @@ body{
 }
 
 .tag{
+  display:none;
   position:absolute;
   right:10px;
   top:10px;
@@ -751,7 +754,6 @@ function renderBoard(){
       type="button"
       class="num-card ${shouldDim && !matchSet.has(item.key) ? "dim" : ""} ${(activeCount > 0 ? matchSet.has(item.key) : selected.has(item.key)) ? "selected" : ""}"
       data-number="${item.key}">
-      <span class="tag">${item.tail}尾</span>
       <div class="ball ${item.color}"><span>${item.key}</span></div>
       <div class="meta">
         <strong>${item.colorLabel}</strong>
