@@ -508,13 +508,13 @@ const DEMO_LOTTERY_DATA = {
   nextTime:"2026-05-01 21:30",
   updateTime:"demo",
   items:[
-    { num:"08", color:"red", note:"\u91d1/\u9f99" },
-    { num:"16", color:"blue", note:"\u6728/\u9a6c" },
-    { num:"23", color:"green", note:"\u6c34/\u72d7" },
-    { num:"31", color:"red", note:"\u706b/\u864e" },
-    { num:"38", color:"green", note:"\u571f/\u7f8a" },
-    { num:"42", color:"blue", note:"\u91d1/\u725b" },
-    { num:"49", color:"green", note:"\u6c34/\u86c7" }
+    { num:"08", color:"red", note:"\u9f99/\u91d1" },
+    { num:"16", color:"blue", note:"\u9a6c/\u6728" },
+    { num:"23", color:"green", note:"\u72d7/\u6c34" },
+    { num:"31", color:"red", note:"\u864e/\u706b" },
+    { num:"38", color:"green", note:"\u7f8a/\u571f" },
+    { num:"42", color:"blue", note:"\u725b/\u91d1" },
+    { num:"49", color:"green", note:"\u86c7/\u6c34" }
   ]
 };
 
@@ -666,8 +666,17 @@ function safeNumber(value, fallback = "--"){
   return String(number).padStart(2, "0");
 }
 
+function normalizeNote(value){
+  const parts = String(value || "").split("/").map(part => part.trim());
+  const elements = new Set(["\u91d1", "\u6728", "\u6c34", "\u706b", "\u571f"]);
+  if(elements.has(parts[0]) && parts[1]){
+    return `${parts[1]}/${parts[0]}`;
+  }
+  return parts.filter(Boolean).join("/");
+}
+
 function safeNote(value){
-  const text = String(value || "").trim();
+  const text = normalizeNote(value);
   return text ? escapeHtml(text) : "&nbsp;";
 }
 
@@ -1028,17 +1037,34 @@ setInterval(loadServerData, 15000);
 setInterval(updateCountdown, 1000);
 
 historyBtn.addEventListener("click", () => {
-  const target = new URL("history.html", window.location.href).href;
+  const target = new URL("history.html", window.location.href);
+  let returnUrl = window.location.href;
+
+  try{
+    if(window.top && window.top !== window.self && document.referrer){
+      returnUrl = document.referrer;
+    }
+  }catch(error){
+    if(document.referrer){
+      returnUrl = document.referrer;
+    }
+  }
+
+  if(URL_PARAMS.has("demo")){
+    target.searchParams.set("demo", "");
+  }
+  target.searchParams.set("from", returnUrl);
+
   try{
     if(window.top && window.top !== window.self){
-      window.top.location.href = target;
+      window.top.location.href = target.href;
       return;
     }
   }catch(error){
-    window.open(target, "_top");
+    window.open(target.href, "_top");
     return;
   }
-  window.location.href = target;
+  window.location.href = target.href;
 });
 refreshBtn.addEventListener("click", () => {
   window.location.reload();

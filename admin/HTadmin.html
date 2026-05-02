@@ -739,7 +739,7 @@ for(let i = 1; i <= 7; i++){
       <b>${i === 7 ? "特码" : "正码" + i}</b>
       <input class="num-input" id="num${i}" inputmode="numeric" maxlength="2" placeholder="01-49">
       <div class="preview-ball" id="preview${i}">--</div>
-      <input class="auto-note" id="note${i}" readonly placeholder="自动显示五行 / 生肖">
+      <input class="auto-note" id="note${i}" readonly placeholder="自动显示生肖 / 五行">
       <input class="color-output" id="colorText${i}" readonly placeholder="自动颜色">
       <input id="color${i}" type="hidden">
     </div>
@@ -792,7 +792,23 @@ function refreshDuplicateRows(){
 }
 
 function noteText(info){
-  return `${info.element} / ${info.zodiac}`;
+  return `${info.zodiac} / ${info.element}`;
+}
+
+function splitNoteParts(value){
+  const parts = String(value || "").split("/").map(part => part.trim());
+  const elements = new Set(["金", "木", "水", "火", "土"]);
+  if(elements.has(parts[0]) && parts[1]){
+    return {
+      zodiac: parts[1],
+      element: parts[0]
+    };
+  }
+
+  return {
+    zodiac: parts[0] || "--",
+    element: parts[1] || "--"
+  };
 }
 
 function parseDateTimeLocal(value){
@@ -1032,9 +1048,9 @@ function buildHistoryBalls(items){
   let html = "";
   items.forEach((item, index) => {
     const row = item || {};
-    const noteParts = row.note ? String(row.note).split("/").map(part => part.trim()) : [];
-    const element = escapeHtml(noteParts[0] || "--");
-    const zodiac = escapeHtml(noteParts[1] || "--");
+    const noteParts = splitNoteParts(row.note);
+    const zodiac = escapeHtml(noteParts.zodiac);
+    const element = escapeHtml(noteParts.element);
     const color = safeColor(row.color);
     const num = safeNumber(row.num);
     if(index === 6){

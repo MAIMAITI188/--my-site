@@ -71,9 +71,9 @@ h1{
 .history-list{
   width:min(1160px,100%);
   margin:0 auto;
-  padding:14px 18px 36px;
+  padding:16px 18px 36px;
   column-count:3;
-  column-gap:14px;
+  column-gap:16px;
 }
 
 .history-empty{
@@ -85,8 +85,8 @@ h1{
 .history-item{
   display:inline-block;
   width:100%;
-  margin:0 0 10px;
-  padding:10px;
+  margin:0 0 12px;
+  padding:12px;
   border:1px solid #d7eadf;
   border-radius:12px;
   background:rgba(255,255,255,.68);
@@ -100,8 +100,8 @@ h1{
   align-items:center;
   justify-content:space-between;
   gap:12px;
-  margin-bottom:7px;
-  font-size:14px;
+  margin-bottom:9px;
+  font-size:16px;
   font-weight:bold;
 }
 
@@ -109,27 +109,27 @@ h1{
   display:flex;
   flex-wrap:wrap;
   align-items:center;
-  gap:7px;
+  gap:8px;
 }
 
 .history-entry{
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:4px;
+  gap:5px;
 }
 
 .history-num{
-  min-width:42px;
-  width:44px;
-  height:44px;
+  min-width:46px;
+  width:48px;
+  height:48px;
   padding:0;
   border-radius:50%;
   display:flex;
   align-items:center;
   justify-content:center;
   color:#fff;
-  font-size:16px;
+  font-size:18px;
   font-weight:900;
   box-shadow:0 6px 14px rgba(0,0,0,.14);
 }
@@ -149,7 +149,7 @@ h1{
 }
 
 .history-num-zodiac{
-  font-size:12px;
+  font-size:13px;
   font-weight:bold;
 }
 
@@ -161,12 +161,12 @@ h1{
 }
 
 .history-num-element{
-  font-size:12px;
+  font-size:13px;
   color:#5f7d69;
 }
 
 .history-plus{
-  font-size:28px;
+  font-size:30px;
   font-weight:bold;
   color:#0c8e47;
   line-height:1;
@@ -205,44 +205,44 @@ h1{
   }
 
   .history-item{
-    padding:9px;
+    padding:11px 9px;
   }
 
   .history-title{
-    font-size:13px;
-    margin-bottom:5px;
+    font-size:14px;
+    margin-bottom:7px;
   }
 
   .history-balls{
     flex-wrap:nowrap;
     justify-content:space-between;
-    gap:2px;
+    gap:3px;
     overflow:visible;
   }
 
   .history-num{
     min-width:0;
-    width:28px;
-    height:28px;
-    font-size:12px;
+    width:32px;
+    height:32px;
+    font-size:14px;
     box-shadow:0 3px 8px rgba(0,0,0,.12);
   }
 
   .history-entry{
     flex:1 1 0;
     min-width:0;
-    gap:3px;
+    gap:4px;
   }
 
   .history-num-zodiac,
   .history-num-element{
-    font-size:10px;
+    font-size:11px;
   }
 
   .history-plus{
-    flex:0 0 10px;
+    flex:0 0 12px;
     padding:0;
-    font-size:16px;
+    font-size:18px;
     text-align:center;
   }
 }
@@ -272,13 +272,13 @@ const DEMO_LOTTERY_DATA = {
   nextTime:"2026-05-01 21:30",
   updateTime:"demo",
   items:[
-    { num:"08", color:"red", note:"\u91d1/\u9f99" },
-    { num:"16", color:"blue", note:"\u6728/\u9a6c" },
-    { num:"23", color:"green", note:"\u6c34/\u72d7" },
-    { num:"31", color:"red", note:"\u706b/\u864e" },
-    { num:"38", color:"green", note:"\u571f/\u7f8a" },
-    { num:"42", color:"blue", note:"\u91d1/\u725b" },
-    { num:"49", color:"green", note:"\u6c34/\u86c7" }
+    { num:"08", color:"red", note:"\u9f99/\u91d1" },
+    { num:"16", color:"blue", note:"\u9a6c/\u6728" },
+    { num:"23", color:"green", note:"\u72d7/\u6c34" },
+    { num:"31", color:"red", note:"\u864e/\u706b" },
+    { num:"38", color:"green", note:"\u7f8a/\u571f" },
+    { num:"42", color:"blue", note:"\u725b/\u91d1" },
+    { num:"49", color:"green", note:"\u86c7/\u6c34" }
   ]
 };
 
@@ -390,6 +390,22 @@ function safeNumber(value, fallback = "--"){
   return String(number).padStart(2, "0");
 }
 
+function splitNoteParts(value){
+  const parts = String(value || "").split("/").map(part => part.trim());
+  const elements = new Set(["\u91d1", "\u6728", "\u6c34", "\u706b", "\u571f"]);
+  if(elements.has(parts[0]) && parts[1]){
+    return {
+      zodiac: parts[1],
+      element: parts[0]
+    };
+  }
+
+  return {
+    zodiac: parts[0] || "--",
+    element: parts[1] || "--"
+  };
+}
+
 function buildHistoryRows(items){
   if(!Array.isArray(items)){
     return "";
@@ -398,9 +414,9 @@ function buildHistoryRows(items){
   let html = "";
   items.forEach((item, index) => {
     const row = item || {};
-    const noteParts = row.note ? String(row.note).split("/").map(part => part.trim()) : [];
-    const element = escapeHtml(noteParts[0] || "--");
-    const zodiac = escapeHtml(noteParts[1] || "--");
+    const noteParts = splitNoteParts(row.note);
+    const zodiac = escapeHtml(noteParts.zodiac);
+    const element = escapeHtml(noteParts.element);
     const color = safeColor(row.color);
     const num = safeNumber(row.num);
     if(index === 6){
@@ -486,7 +502,8 @@ async function loadServerData(){
 }
 
 backBtn.addEventListener("click", () => {
-  const target = new URL("index.html", window.location.href).href;
+  const from = URL_PARAMS.get("from");
+  const target = from || new URL("./", window.location.href).href;
   try{
     if(window.top && window.top !== window.self){
       window.top.location.href = target;
