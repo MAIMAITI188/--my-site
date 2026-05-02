@@ -71,7 +71,7 @@ if [ ! -f /app/data/chat-bans.json ]; then
 fi
 
 if [ ! -f /app/data/chat-settings.json ]; then
-    echo '{"pins":[{"name":"系统","avatar":"📢","text":"欢迎来到聊天室模板。"},{"name":"小港","avatar":"💎","text":"这里可以放公告、闲聊、开奖讨论。"}],"updatedAt":0}' > /app/data/chat-settings.json
+    echo '{"pins":[{"name":"系统","avatar":"📢","text":"欢迎来到聊天室模板。"}],"updatedAt":0}' > /app/data/chat-settings.json
 fi
 
 chown nobody:nogroup /app/data/*.json

@@ -21,7 +21,7 @@ RUN if [ ! -f /app/data/gallery.json ]; then echo '[]' > /app/data/gallery.json;
     if [ ! -f /app/data/chat.json ]; then echo '[]' > /app/data/chat.json; fi && \
     if [ ! -f /app/data/chat-users.json ]; then echo '[]' > /app/data/chat-users.json; fi && \
     if [ ! -f /app/data/chat-bans.json ]; then echo '[]' > /app/data/chat-bans.json; fi && \
-    if [ ! -f /app/data/chat-settings.json ]; then echo '{"pins":[{"name":"系统","avatar":"📢","text":"欢迎来到聊天室模板。"},{"name":"小港","avatar":"💎","text":"这里可以放公告、闲聊、开奖讨论。"}],"updatedAt":0}' > /app/data/chat-settings.json; fi && \
+    if [ ! -f /app/data/chat-settings.json ]; then echo '{"pins":[{"name":"系统","avatar":"📢","text":"欢迎来到聊天室模板。"}],"updatedAt":0}' > /app/data/chat-settings.json; fi && \
     chown -R www-data:www-data /app/data /app/images/chat && \
     chmod 664 /app/data/*.json
 

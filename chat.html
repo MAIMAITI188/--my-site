@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>聊天室模板预览</title>
+<title>群英荟萃丨华山论剑</title>
 <style>
 html{min-height:100%}
 .chat-page{min-height:100%;margin:0;background:#eef1f5;color:#163322;font-family:Arial,"Microsoft YaHei",sans-serif}
@@ -151,7 +151,7 @@ html{min-height:100%}
   <header class="chat-head">
     <a class="chat-back" href="WZZT.html" aria-label="返回主页">‹</a>
     <div class="chat-head-main">
-      <h1 class="chat-title">聊天室模板</h1>
+      <h1 class="chat-title">群英荟萃丨华山论剑</h1>
       <div class="chat-sub" id="subtitle">注册后进入聊天室，ID 全站唯一</div>
     </div>
     <button class="chat-switch" id="settingsBtn" type="button" title="设置头像和ID">设置</button>
@@ -265,8 +265,7 @@ let selectedAvatar = avatars[0];
 let settingsSelectedAvatar = avatars[0];
 let messages = [];
 let pinMessages = [
-  {name:"系统", avatar:"📢", text:"欢迎来到聊天室模板。"},
-  {name:"小港", avatar:"💎", text:"这里可以放公告、闲聊、开奖讨论。"}
+  {name:"系统", avatar:"📢", text:"欢迎来到聊天室模板。"}
 ];
 let lastMessageId = "";
 let loadingMessages = false;
@@ -412,7 +411,7 @@ async function loadMessages(forceScroll=false){
     if(!response.ok) throw new Error("HTTP " + response.status);
     const data = await response.json();
     if(data.settings && Array.isArray(data.settings.pins)){
-      pinMessages = data.settings.pins.slice(0, 2);
+      pinMessages = data.settings.pins.slice(0, 1);
     }
     const nextMessages = Array.isArray(data.messages) ? data.messages : [];
     const newest = nextMessages.length ? String(nextMessages[nextMessages.length - 1].id || "") : "";

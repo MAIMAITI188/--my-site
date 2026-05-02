@@ -135,7 +135,6 @@ function default_settings(): array {
     return [
         'pins' => [
             ['name' => '系统', 'avatar' => '📢', 'text' => '欢迎来到聊天室模板。'],
-            ['name' => '小港', 'avatar' => '💎', 'text' => '这里可以放公告、闲聊、开奖讨论。'],
         ],
         'updatedAt' => 0,
     ];
@@ -148,7 +147,7 @@ function normalize_settings(array $settings): array {
         $pins = [];
     }
     $cleanPins = [];
-    foreach (array_slice($pins, 0, 2) as $key => $pin) {
+    foreach (array_slice($pins, 0, 1) as $key => $pin) {
         if (!is_array($pin)) {
             $pin = [];
         }
@@ -159,7 +158,7 @@ function normalize_settings(array $settings): array {
             'text' => clean_text($pin['text'] ?? $default['text'], 300),
         ];
     }
-    while (count($cleanPins) < 2) {
+    while (count($cleanPins) < 1) {
         $cleanPins[] = $fallback['pins'][count($cleanPins)];
     }
     return [

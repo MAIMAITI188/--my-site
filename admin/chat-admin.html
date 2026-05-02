@@ -160,20 +160,6 @@ th{color:#385545;background:#f6fbf7}
           <label for="pin1Text">第一条文本</label>
           <textarea id="pin1Text" maxlength="300"></textarea>
         </div>
-        <div class="row">
-          <div class="field">
-            <label for="pin2Name">第二条名称</label>
-            <input id="pin2Name" maxlength="18">
-          </div>
-          <div class="field">
-            <label for="pin2Avatar">头像</label>
-            <input id="pin2Avatar" maxlength="8">
-          </div>
-        </div>
-        <div class="field">
-          <label for="pin2Text">第二条文本</label>
-          <textarea id="pin2Text" maxlength="300"></textarea>
-        </div>
         <button type="button" id="savePinsBtn">保存公告</button>
       </div>
     </div>
@@ -253,9 +239,6 @@ const userRows = document.getElementById("userRows");
 const pin1Name = document.getElementById("pin1Name");
 const pin1Avatar = document.getElementById("pin1Avatar");
 const pin1Text = document.getElementById("pin1Text");
-const pin2Name = document.getElementById("pin2Name");
-const pin2Avatar = document.getElementById("pin2Avatar");
-const pin2Text = document.getElementById("pin2Text");
 const muteName = document.getElementById("muteName");
 const muteReason = document.getElementById("muteReason");
 const muteDays = document.getElementById("muteDays");
@@ -308,9 +291,6 @@ function fillSettings(settings){
   pin1Name.value = pins[0]?.name || "系统";
   pin1Avatar.value = pins[0]?.avatar || "📢";
   pin1Text.value = pins[0]?.text || "";
-  pin2Name.value = pins[1]?.name || "小港";
-  pin2Avatar.value = pins[1]?.avatar || "💎";
-  pin2Text.value = pins[1]?.text || "";
 }
 
 function renderStats(){
@@ -407,8 +387,7 @@ savePinsBtn.addEventListener("click", async () => {
     await postAdmin({
       action:"save-settings",
       pins:[
-        { name:pin1Name.value, avatar:pin1Avatar.value, text:pin1Text.value },
-        { name:pin2Name.value, avatar:pin2Avatar.value, text:pin2Text.value }
+        { name:pin1Name.value, avatar:pin1Avatar.value, text:pin1Text.value }
       ]
     });
     setStatus("公告已保存，前台刷新消息后会更新。");
