@@ -144,10 +144,23 @@ body{
   color:inherit;
   box-shadow:0 4px 12px rgba(0,0,0,.12);
   transition:.2s;
+  -webkit-tap-highlight-color:transparent;
 }
 
-.gallery-card:hover{
-  transform:translateY(-4px);
+@media(hover:hover) and (pointer:fine){
+  .gallery-card:hover{
+    transform:translateY(-4px);
+  }
+}
+
+@media(hover:none), (pointer:coarse){
+  .gallery-card{
+    transition:none;
+  }
+
+  .gallery-card:hover{
+    transform:none;
+  }
 }
 
 .gallery-media{
