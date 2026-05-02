@@ -269,29 +269,28 @@ h1{
   position:fixed;
   inset:0;
   display:none;
-  align-items:center;
-  justify-content:center;
-  padding:18px;
-  background:rgba(4,22,13,.42);
+  padding:0;
+  background:#f7fcf8;
   z-index:9999;
+  overflow:hidden;
 }
 
 .history-modal.is-open{
-  display:flex;
+  display:block;
 }
 
 .history-panel{
-  width:min(920px,100%);
-  max-height:min(86vh,780px);
+  width:100%;
+  height:100%;
   overflow:auto;
-  border-radius:24px;
+  border-radius:0;
   background:#f7fcf8;
-  box-shadow:0 18px 56px rgba(0,0,0,.22);
+  box-shadow:none;
   color:#104229;
 }
 
 .history-panel.is-more-view{
-  width:min(1120px,100%);
+  width:100%;
 }
 
 .history-head{
@@ -299,10 +298,13 @@ h1{
   align-items:center;
   justify-content:space-between;
   gap:12px;
-  padding:18px 20px 12px;
+  padding:16px 22px 13px;
   position:sticky;
   top:0;
-  background:#f7fcf8;
+  background:linear-gradient(180deg,#f7fcf8 0%,#edf9f0 100%);
+  border-bottom:1px solid #d7eadf;
+  box-shadow:0 8px 20px rgba(12,92,49,.06);
+  z-index:2;
 }
 
 .history-head h3{
@@ -313,7 +315,7 @@ h1{
 .history-title-row{
   display:flex;
   align-items:center;
-  gap:10px;
+  gap:14px;
   min-width:0;
 }
 
@@ -325,26 +327,7 @@ h1{
   object-fit:contain;
   border-radius:50%;
   background:#fff;
-  box-shadow:0 5px 14px rgba(0,0,0,.14);
-}
-
-.history-back{
-  display:none;
-  align-items:center;
-  justify-content:center;
-  width:40px;
-  height:40px;
-  border:0;
-  border-radius:50%;
-  background:#ddf4e4;
-  color:#0b7e3f;
-  font-size:24px;
-  line-height:1;
-  cursor:pointer;
-}
-
-.history-panel.is-more-view .history-back{
-  display:flex;
+  box-shadow:0 6px 16px rgba(0,0,0,.16);
 }
 
 .history-close{
@@ -352,15 +335,18 @@ h1{
   width:40px;
   height:40px;
   border-radius:50%;
-  background:#ddf4e4;
+  background:rgba(255,255,255,.92);
   color:#0b7e3f;
   font-size:24px;
   line-height:1;
   cursor:pointer;
+  box-shadow:0 8px 22px rgba(0,0,0,.12);
 }
 
 .history-list{
-  padding:0 20px 20px;
+  width:min(1160px,100%);
+  margin:0 auto;
+  padding:14px 18px 24px;
 }
 
 .history-empty{
@@ -387,19 +373,6 @@ h1{
   margin-bottom:7px;
   font-size:15px;
   font-weight:bold;
-}
-
-.history-more-btn{
-  flex:0 0 auto;
-  border:0;
-  padding:7px 13px;
-  border-radius:999px;
-  background:linear-gradient(135deg,#16b760,#0b8d45);
-  color:#fff;
-  font-size:13px;
-  font-weight:bold;
-  cursor:pointer;
-  box-shadow:0 7px 16px rgba(14,168,79,.22);
 }
 
 .history-balls{
@@ -463,7 +436,7 @@ h1{
 .history-num.green{background:linear-gradient(145deg,#20d66f,#088b43)}
 
 .history-waterfall{
-  column-count:2;
+  column-count:3;
   column-gap:14px;
 }
 
@@ -534,12 +507,28 @@ h1{
   .note{margin-top:14px;font-size:26px;min-height:38px}
   .next-time{font-size:26px}
   .refresh-btn{right:28px;bottom:16px;height:42px;min-width:104px;font-size:18px}
+  .history-head{
+    padding:10px 10px 8px;
+  }
+  .history-title-logo{
+    width:30px;
+    height:30px;
+    flex-basis:30px;
+  }
+  .history-head h3{
+    font-size:18px;
+  }
+  .history-close{
+    width:34px;
+    height:34px;
+    font-size:22px;
+  }
   .history-panel{
-    max-height:92vh;
-    border-radius:18px;
+    max-height:none;
+    border-radius:0;
   }
   .history-list{
-    padding:0 10px 14px;
+    padding:10px 8px 16px;
   }
   .history-item{
     padding:9px 0;
@@ -547,10 +536,6 @@ h1{
   .history-title{
     font-size:13px;
     margin-bottom:5px;
-  }
-  .history-more-btn{
-    padding:5px 10px;
-    font-size:12px;
   }
   .history-waterfall{
     column-count:1;
@@ -773,7 +758,6 @@ h1{
   <div class="history-panel" id="historyPanel">
     <div class="history-head">
       <div class="history-title-row">
-        <button class="history-back" id="historyBack" type="button" aria-label="返回">‹</button>
         <img class="history-title-logo" src="assets/hk-logo.png" alt="香港紫荆花标志">
         <h3 id="historyHeading">历史开奖</h3>
       </div>
@@ -797,7 +781,6 @@ const historyBtn = document.getElementById("historyBtn");
 const refreshBtn = document.getElementById("refreshBtn");
 const historyModal = document.getElementById("historyModal");
 const historyPanel = document.getElementById("historyPanel");
-const historyBack = document.getElementById("historyBack");
 const historyHeading = document.getElementById("historyHeading");
 const historyClose = document.getElementById("historyClose");
 const historyList = document.getElementById("historyList");
@@ -1147,18 +1130,14 @@ function getMergedHistory(){
   return merged;
 }
 
-function buildHistoryItem(entry, options = {}){
+function buildHistoryItem(entry){
   const period = escapeHtml(entry?.period || "--");
   const items = Array.isArray(entry?.items) ? entry.items : [];
-  const moreButton = options.showMoreButton
-    ? '<button class="history-more-btn" type="button" data-history-more>更多记录</button>'
-    : "";
 
   return `
     <div class="history-item">
       <div class="history-title">
         <span>第 ${period} 期</span>
-        ${moreButton}
       </div>
       <div class="history-balls">${buildHistoryRows(items)}</div>
     </div>
@@ -1167,22 +1146,8 @@ function buildHistoryItem(entry, options = {}){
 
 function renderHistory(){
   const merged = getMergedHistory();
-  historyPanel.classList.remove("is-more-view");
   historyHeading.innerText = "历史开奖";
-
-  if(!merged.length){
-    historyList.innerHTML = `<div class="history-empty">暂时还没有历史开奖数据</div>`;
-    return;
-  }
-
-  historyList.classList.remove("history-waterfall");
-  historyList.innerHTML = merged.map(entry => buildHistoryItem(entry, { showMoreButton: Boolean(entry._isCurrent) })).join("");
-}
-
-function openMoreHistory(){
-  const merged = getMergedHistory();
   historyPanel.classList.add("is-more-view");
-  historyHeading.innerText = "更多记录";
   historyList.classList.add("history-waterfall");
 
   if(!merged.length){
@@ -1202,8 +1167,6 @@ function openHistory(){
 function closeHistory(){
   historyModal.classList.remove("is-open");
   historyModal.setAttribute("aria-hidden", "true");
-  historyPanel.classList.remove("is-more-view");
-  historyList.classList.remove("history-waterfall");
 }
 
 function ballHtml(color, num, extra = ""){
@@ -1460,13 +1423,7 @@ historyBtn.addEventListener("click", openHistory);
 refreshBtn.addEventListener("click", () => {
   window.location.reload();
 });
-historyBack.addEventListener("click", renderHistory);
 historyClose.addEventListener("click", closeHistory);
-historyList.addEventListener("click", event => {
-  if(event.target.closest("[data-history-more]")){
-    openMoreHistory();
-  }
-});
 historyModal.addEventListener("click", event => {
   if(event.target === historyModal){
     closeHistory();
