@@ -531,11 +531,11 @@ function sameImageUrl(left, right){
 }
 
 function handleGalleryImageError(image){
-  var original = image.getAttribute("data-original") || "";
-  var triedOriginal = image.getAttribute("data-tried-original") === "1";
-  if(original && !sameImageUrl(image.src, original) && !triedOriginal){
-    image.setAttribute("data-tried-original", "1");
-    image.src = original;
+  var thumb = image.getAttribute("data-thumb") || "";
+  var triedThumb = image.getAttribute("data-tried-thumb") === "1";
+  if(thumb && !sameImageUrl(image.src, thumb) && !triedThumb){
+    image.setAttribute("data-tried-thumb", "1");
+    image.src = thumb;
     return;
   }
 
@@ -553,7 +553,7 @@ function buildCard(item){
   var sources = getGalleryImageSources(item);
   var linkHref = normalizeLinkHref(item.link);
   var image = sources.original
-    ? '<div class="gallery-media"><img class="gallery-image" src="' + escapeHtml(sources.thumb) + '" data-original="' + escapeHtml(sources.original) + '" alt="' + title + '" loading="eager" decoding="async" onerror="handleGalleryImageError(this)"></div>'
+    ? '<div class="gallery-media"><img class="gallery-image" src="' + escapeHtml(sources.original) + '" data-thumb="' + escapeHtml(sources.thumb) + '" alt="' + title + '" loading="eager" decoding="async" onerror="handleGalleryImageError(this)"></div>'
     : '<div class="gallery-placeholder">这条数据还没有填写图片路径</div>';
 
   if(linkHref){
