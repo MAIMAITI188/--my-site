@@ -64,7 +64,7 @@ html{min-height:100%}
   color:#fff!important;
   font-size:12px!important;
 }
-.chat-list{flex:1;overflow:auto;padding:14px 12px 18px;background:linear-gradient(180deg,#f8fbf9,var(--chat-bg))}
+.chat-list{flex:1;overflow:auto;padding:14px 12px 18px;background:linear-gradient(180deg,#f8fbf9,var(--chat-bg));scroll-behavior:auto}
 .chat-pins{
   flex:0 0 auto;
   padding:10px 12px;
@@ -91,7 +91,9 @@ html{min-height:100%}
 .chat-name{color:var(--chat-brand-dark);font-weight:bold;font-size:14px}
 .chat-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5;font-size:15px}
 .chat-image-link{display:block;margin-top:8px;line-height:0}
-.chat-image{display:block;max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--chat-line);object-fit:contain;background:#f4faf6}
+.chat-image-link.has-size{width:min(100%,var(--chat-image-preview-width));max-width:100%}
+.chat-image{display:block;width:auto;height:auto;max-width:100%;max-height:260px;border-radius:10px;border:1px solid var(--chat-line);object-fit:contain;background:#f4faf6}
+.chat-image-link.has-size .chat-image{width:100%;height:auto;aspect-ratio:var(--chat-image-ratio)}
 .chat-bar{padding:10px;background:var(--chat-card);border-top:1px solid var(--chat-line)}
 .chat-tools{display:none;grid-template-columns:repeat(8,1fr);gap:6px;margin-bottom:8px;padding:8px;border:1px solid var(--chat-line);border-radius:12px;background:#f7fbf8}
 .chat-tools.is-open{display:grid}
@@ -268,6 +270,8 @@ let pinMessages = [
   {name:"系统", avatar:"📢", text:"欢迎来到聊天室模板。"}
 ];
 let lastMessageId = "";
+let lastMessageSignature = "";
+let lastPinsSignature = "";
 let loadingMessages = false;
 
 function escapeHtml(value){
@@ -366,18 +370,61 @@ function formatMessageTime(timestamp){
   return `${String(date.getHours()).padStart(2,"0")}:${String(date.getMinutes()).padStart(2,"0")}`;
 }
 
-function render(){
+function scrollToListBottom(){
+  list.scrollTop = list.scrollHeight;
+}
+
+function settleListAtBottom(){
+  scrollToListBottom();
+  requestAnimationFrame(scrollToListBottom);
+}
+
+function isNearListBottom(){
+  return list.scrollHeight - list.scrollTop - list.clientHeight < 120;
+}
+
+function imageSize(image){
+  const width = Math.round(Number(image?.width || 0));
+  const height = Math.round(Number(image?.height || 0));
+  if(width < 1 || height < 1) return null;
+  return {
+    width,
+    height,
+    previewWidth:Math.max(1, Math.round(Math.min(width, (260 * width) / height)))
+  };
+}
+
+function renderImage(image){
+  if(!image || !image.src) return "";
+  const size = imageSize(image);
+  const linkClass = size ? "chat-image-link has-size" : "chat-image-link";
+  const linkStyle = size ? ` style="--chat-image-ratio:${size.width} / ${size.height};--chat-image-preview-width:${size.previewWidth}px"` : "";
+  const sizeAttrs = size ? ` width="${size.width}" height="${size.height}"` : "";
+  return `
+      <a class="${linkClass}" href="${escapeHtml(image.src)}" target="_blank" rel="noopener noreferrer"${linkStyle}>
+        <img class="chat-image" src="${escapeHtml(image.src)}" alt="聊天图片"${sizeAttrs} loading="lazy" decoding="async">
+      </a>
+    `;
+}
+
+function keepBottomAfterImagesLoad(){
+  list.querySelectorAll(".chat-image").forEach(image => {
+    if(!image.complete){
+      image.addEventListener("load", settleListAtBottom, {once:true});
+    }
+  });
+}
+
+function render(options={}){
+  const shouldScroll = Boolean(options.scrollToBottom);
   renderPins();
   if(!messages.length){
     list.innerHTML = "";
+    if(shouldScroll) settleListAtBottom();
     return;
   }
   list.innerHTML = messages.map(item => {
-    const image = item.image && item.image.src ? `
-      <a class="chat-image-link" href="${escapeHtml(item.image.src)}" target="_blank" rel="noopener noreferrer">
-        <img class="chat-image" src="${escapeHtml(item.image.src)}" alt="聊天图片" loading="lazy">
-      </a>
-    ` : "";
+    const image = renderImage(item.image);
     return `
       <article class="chat-msg ${item.me ? "is-me" : ""}">
         <div class="chat-meta">
@@ -389,7 +436,10 @@ function render(){
       </article>
     `;
   }).join("");
-  list.scrollTop = list.scrollHeight;
+  if(shouldScroll){
+    settleListAtBottom();
+    keepBottomAfterImagesLoad();
+  }
 }
 
 function renderPins(){
@@ -410,19 +460,38 @@ async function loadMessages(forceScroll=false){
     const response = await fetch(`${CHAT_API}?v=${Date.now()}`, { cache:"no-store" });
     if(!response.ok) throw new Error("HTTP " + response.status);
     const data = await response.json();
+    const previousNewest = lastMessageId;
+    const wasNearBottom = isNearListBottom();
     if(data.settings && Array.isArray(data.settings.pins)){
       pinMessages = data.settings.pins.slice(0, 1);
     }
     const nextMessages = Array.isArray(data.messages) ? data.messages : [];
     const newest = nextMessages.length ? String(nextMessages[nextMessages.length - 1].id || "") : "";
-    const shouldScroll = forceScroll || newest !== lastMessageId;
+    const messageSignature = JSON.stringify(nextMessages.map(item => [
+      item.id || "",
+      item.createdAt || "",
+      item.text || "",
+      item.name || "",
+      item.avatar || "",
+      item.image?.src || "",
+      item.image?.width || "",
+      item.image?.height || ""
+    ]));
+    const pinsSignature = JSON.stringify(pinMessages);
+    const messagesChanged = messageSignature !== lastMessageSignature;
+    const pinsChanged = pinsSignature !== lastPinsSignature;
+    const hasNewMessage = newest !== previousNewest;
+    const shouldScroll = forceScroll || (hasNewMessage && wasNearBottom);
     lastMessageId = newest;
-    messages = nextMessages.map(item => ({
-      ...item,
-      me:user && item.name === user.name
-    }));
-    render();
-    if(shouldScroll) list.scrollTop = list.scrollHeight;
+    lastMessageSignature = messageSignature;
+    lastPinsSignature = pinsSignature;
+    if(messagesChanged || pinsChanged || forceScroll){
+      messages = nextMessages.map(item => ({
+        ...item,
+        me:user && item.name === user.name
+      }));
+      render({scrollToBottom:shouldScroll});
+    }
   }catch(error){
     hint.textContent = "消息读取失败，请稍后刷新。";
   }finally{
