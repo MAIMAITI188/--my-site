@@ -29,7 +29,7 @@ body{
 body.history-open{
   display:block;
   height:auto;
-  min-height:max(190vh,1200px);
+  min-height:max(320vh,2200px);
   overflow:auto;
   background:#f7fcf8;
 }
@@ -294,7 +294,7 @@ h1{
 body.history-open .history-modal{
   position:relative;
   inset:auto;
-  min-height:max(190vh,1200px);
+  min-height:max(320vh,2200px);
   overflow:visible;
 }
 
@@ -310,7 +310,7 @@ body.history-open .history-modal{
 
 body.history-open .history-panel{
   height:auto;
-  min-height:max(190vh,1200px);
+  min-height:max(320vh,2200px);
   overflow:visible;
 }
 
@@ -609,6 +609,22 @@ body.history-open .history-panel{
   padding:0;
   align-items:center;
   background:transparent;
+}
+
+.is-embedded body.history-open{
+  display:block;
+  height:auto;
+  min-height:max(320vh,2200px);
+  overflow:auto;
+  padding:0;
+  background:#f7fcf8;
+}
+
+.is-embedded body.history-open .history-modal,
+.is-embedded body.history-open .history-panel{
+  height:auto;
+  min-height:max(320vh,2200px);
+  overflow:visible;
 }
 
 .is-embedded .box{
