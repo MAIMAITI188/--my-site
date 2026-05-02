@@ -32,7 +32,7 @@ function valid_image($value): bool {
     if ($value === '') {
         return false;
     }
-    if (preg_match('/^data:image\/(?:png|jpe?g|webp|gif);base64,/i', $value) === 1) {
+    if (preg_match('/^data:image\/(?:png|jpe?g|webp|avif|gif);base64,/i', $value) === 1) {
         return true;
     }
     if (preg_match('/^https?:\/\//i', $value) === 1) {
@@ -117,11 +117,12 @@ foreach ($items as $item) {
     $title = isset($item['title']) ? (string) $item['title'] : '';
     $image = isset($item['image']) ? (string) $item['image'] : '';
     $thumb = isset($item['thumb']) ? (string) $item['thumb'] : '';
+    $thumbAvif = isset($item['thumbAvif']) ? (string) $item['thumbAvif'] : '';
     $link = isset($item['link']) ? (string) $item['link'] : '';
     $sort = isset($item['sort']) && is_numeric($item['sort']) ? (int) $item['sort'] : 0;
     $enabled = !array_key_exists('enabled', $item) || $item['enabled'] !== false;
 
-    if (!valid_text($title, 200) || !valid_image($image) || !valid_optional_image($thumb) || !valid_link($link)) {
+    if (!valid_text($title, 200) || !valid_image($image) || !valid_optional_image($thumb) || !valid_optional_image($thumbAvif) || !valid_link($link)) {
         respond(422, ['ok' => false, 'error' => 'invalid_gallery_item']);
     }
     if (!local_image_exists($root, $image)) {
@@ -138,11 +139,19 @@ foreach ($items as $item) {
             'path' => local_image_path($thumb)
         ];
     }
+    if ($thumbAvif !== '' && !local_image_exists($root, $thumbAvif)) {
+        $missingImages[] = [
+            'title' => $title,
+            'field' => 'thumbAvif',
+            'path' => local_image_path($thumbAvif)
+        ];
+    }
 
     $clean[] = [
         'title' => $title,
         'image' => $image,
         'thumb' => $thumb,
+        'thumbAvif' => $thumbAvif,
         'link' => $link,
         'sort' => $sort,
         'enabled' => $enabled

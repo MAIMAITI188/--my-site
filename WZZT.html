@@ -171,6 +171,11 @@ body{
   line-height:0;
 }
 
+.gallery-media picture{
+  display:block;
+  width:100%;
+}
+
 .gallery-image{
   width:100%;
   max-width:none;
@@ -447,7 +452,7 @@ var lightbox = document.getElementById("lightbox");
 var lightboxImage = document.getElementById("lightboxImage");
 var lightboxClose = document.getElementById("lightboxClose");
 var lightboxOpen = document.getElementById("lightboxOpen");
-var SAFE_IMAGE_DATA_RE = /^data:image\/(?:png|jpe?g|webp|gif);base64,/i;
+var SAFE_IMAGE_DATA_RE = /^data:image\/(?:png|jpe?g|webp|avif|gif);base64,/i;
 
 function escapeHtml(value){
   return String(value == null ? "" : value)
@@ -487,7 +492,8 @@ function getGalleryImageSources(item){
   item = item || {};
   var original = normalizeImageSrc(item.image);
   var thumb = normalizeImageSrc(item.thumb) || original;
-  return { original, thumb };
+  var thumbAvif = normalizeImageSrc(item.thumbAvif);
+  return { original, thumb, thumbAvif };
 }
 
 function normalizeLinkHref(value){
@@ -548,11 +554,17 @@ function handleGalleryImageError(image){
   var triedOriginal = image.getAttribute("data-tried-original") === "1";
   if(original && !sameImageUrl(image.src, original) && !triedOriginal){
     image.setAttribute("data-tried-original", "1");
+    if(image.parentNode && image.parentNode.tagName && image.parentNode.tagName.toLowerCase() === "picture"){
+      var sources = image.parentNode.querySelectorAll("source");
+      for(var index = 0; index < sources.length; index += 1){
+        sources[index].parentNode.removeChild(sources[index]);
+      }
+    }
     image.src = original;
     return;
   }
 
-  var media = image.parentNode;
+  var media = image.closest ? image.closest(".gallery-media") : image.parentNode;
   if(media){
     media.innerHTML = '<div class="gallery-placeholder is-error">图片文件不存在<br>请在后台重新上传并同步</div>';
   }
@@ -565,8 +577,11 @@ function buildCard(item){
   var title = escapeHtml(item.title || "未命名图片");
   var sources = getGalleryImageSources(item);
   var linkHref = normalizeLinkHref(item.link);
+  var avifSource = sources.thumbAvif
+    ? '<source srcset="' + escapeHtml(sources.thumbAvif) + '" type="image/avif">'
+    : '';
   var image = sources.original
-    ? '<div class="gallery-media"><img class="gallery-image" src="' + escapeHtml(sources.thumb) + '" data-original="' + escapeHtml(sources.original) + '" alt="' + title + '" loading="eager" decoding="async" onerror="handleGalleryImageError(this)"></div>'
+    ? '<div class="gallery-media"><picture>' + avifSource + '<img class="gallery-image" src="' + escapeHtml(sources.thumb) + '" data-original="' + escapeHtml(sources.original) + '" alt="' + title + '" loading="lazy" decoding="async" onerror="handleGalleryImageError(this)"></picture></div>'
     : '<div class="gallery-placeholder">这条数据还没有填写图片路径</div>';
 
   if(linkHref){

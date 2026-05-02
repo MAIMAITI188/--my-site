@@ -28,12 +28,19 @@ function create_image_resource(string $path, string $mime) {
         'image/jpeg' => function_exists('imagecreatefromjpeg') ? @imagecreatefromjpeg($path) : false,
         'image/png' => function_exists('imagecreatefrompng') ? @imagecreatefrompng($path) : false,
         'image/webp' => function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($path) : false,
+        'image/avif' => function_exists('imagecreatefromavif') ? @imagecreatefromavif($path) : false,
         default => false,
     };
 }
 
-function save_thumbnail(string $source, string $target, string $mime, int $maxSide = 1200): bool {
+function save_resized_image(string $source, string $target, string $mime, string $format, int $maxSide = 1200): bool {
     if (!function_exists('imagecreatetruecolor') || $mime === 'image/gif') {
+        return false;
+    }
+    if ($format === 'webp' && !function_exists('imagewebp')) {
+        return false;
+    }
+    if ($format === 'avif' && !function_exists('imageavif')) {
         return false;
     }
 
@@ -59,19 +66,23 @@ function save_thumbnail(string $source, string $target, string $mime, int $maxSi
         return false;
     }
 
-    if ($mime === 'image/png' || $mime === 'image/webp') {
+    if (in_array($mime, ['image/png', 'image/webp', 'image/avif'], true) || in_array($format, ['webp', 'avif'], true)) {
         imagealphablending($thumb, false);
         imagesavealpha($thumb, true);
         $transparent = imagecolorallocatealpha($thumb, 0, 0, 0, 127);
         imagefilledrectangle($thumb, 0, 0, $thumbWidth, $thumbHeight, $transparent);
     }
 
+    if (function_exists('imagesetinterpolation') && defined('IMG_BICUBIC_FIXED')) {
+        @imagesetinterpolation($thumb, IMG_BICUBIC_FIXED);
+    }
     imagecopyresampled($thumb, $image, 0, 0, 0, 0, $thumbWidth, $thumbHeight, $width, $height);
 
-    $saved = match ($mime) {
-        'image/jpeg' => imagejpeg($thumb, $target, 88),
-        'image/png' => imagepng($thumb, $target, 6),
-        'image/webp' => imagewebp($thumb, $target, 88),
+    $saved = match ($format) {
+        'webp' => imagewebp($thumb, $target, 82),
+        'avif' => imageavif($thumb, $target, 52, 6),
+        'jpeg' => imagejpeg($thumb, $target, 86),
+        'png' => imagepng($thumb, $target, 6),
         default => false,
     };
 
@@ -116,6 +127,7 @@ $extensions = [
     'image/jpeg' => 'jpg',
     'image/png' => 'png',
     'image/webp' => 'webp',
+    'image/avif' => 'avif',
     'image/gif' => 'gif',
 ];
 if (!isset($extensions[$mime])) {
@@ -137,7 +149,8 @@ ensure_directory($thumbDir);
 $base = strtolower(pathinfo((string)($file['name'] ?? 'image'), PATHINFO_FILENAME));
 $base = preg_replace('/[^a-z0-9_-]+/', '-', $base) ?: 'image';
 $base = trim($base, '-_') ?: 'image';
-$name = $base . '-' . date('YmdHis') . '-' . bin2hex(random_bytes(4)) . '.' . $extensions[$mime];
+$nameBase = $base . '-' . date('YmdHis') . '-' . bin2hex(random_bytes(4));
+$name = $nameBase . '.' . $extensions[$mime];
 $target = $originalDir . DIRECTORY_SEPARATOR . $name;
 
 if (!move_uploaded_file($file['tmp_name'], $target)) {
@@ -148,13 +161,22 @@ chmod($target, 0664);
 
 $originalPath = 'data/gallery-images/original/' . $name;
 $thumbPath = '';
-$thumbTarget = $thumbDir . DIRECTORY_SEPARATOR . $name;
-if (save_thumbnail($target, $thumbTarget, $mime)) {
-    $thumbPath = 'data/gallery-images/thumbs/' . $name;
+$thumbAvifPath = '';
+$thumbWebpName = $nameBase . '.webp';
+$thumbWebpTarget = $thumbDir . DIRECTORY_SEPARATOR . $thumbWebpName;
+if (save_resized_image($target, $thumbWebpTarget, $mime, 'webp')) {
+    $thumbPath = 'data/gallery-images/thumbs/' . $thumbWebpName;
+}
+
+$thumbAvifName = $nameBase . '.avif';
+$thumbAvifTarget = $thumbDir . DIRECTORY_SEPARATOR . $thumbAvifName;
+if (save_resized_image($target, $thumbAvifTarget, $mime, 'avif')) {
+    $thumbAvifPath = 'data/gallery-images/thumbs/' . $thumbAvifName;
 }
 
 respond(200, [
     'ok' => true,
     'path' => $originalPath,
     'thumb' => $thumbPath ?: $originalPath,
+    'thumbAvif' => $thumbAvifPath,
 ]);

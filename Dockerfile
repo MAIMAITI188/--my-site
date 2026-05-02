@@ -1,9 +1,9 @@
 FROM php:8.2-fpm-alpine
 
 # 安装Nginx、图片处理扩展和必要工具
-RUN apk add --no-cache nginx curl apache2-utils freetype libjpeg-turbo libpng libwebp && \
-    apk add --no-cache --virtual .build-deps $PHPIZE_DEPS freetype-dev libjpeg-turbo-dev libpng-dev libwebp-dev && \
-    docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp && \
+RUN apk add --no-cache nginx curl apache2-utils freetype libjpeg-turbo libpng libwebp libavif && \
+    apk add --no-cache --virtual .build-deps $PHPIZE_DEPS freetype-dev libjpeg-turbo-dev libpng-dev libwebp-dev libavif-dev && \
+    docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-avif && \
     docker-php-ext-install gd && \
     apk del .build-deps
 

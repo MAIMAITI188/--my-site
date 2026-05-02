@@ -8,6 +8,7 @@ types {
     application/json json;
     image/png png;
     image/svg+xml svg svgz;
+    image/avif avif;
     image/webp webp;
     image/x-icon ico;
     application/font-woff woff;

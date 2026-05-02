@@ -231,11 +231,15 @@ textarea{
   line-height:1.5;
 }
 
+.thumb picture,
 .thumb img{
   width:100%;
   height:100%;
-  object-fit:cover;
   display:block;
+}
+
+.thumb img{
+  object-fit:cover;
 }
 
 .meta{
@@ -461,8 +465,8 @@ code{
               <button class="btn blue" type="button" id="chooseImageBtn">&#x9009;&#x62E9;&#x56FE;&#x7247;</button>
               <button class="btn dark" type="button" id="clearImageBtn">&#x6E05;&#x9664;&#x5DF2;&#x9009;&#x56FE;&#x7247;</button>
             </div>
-            <div class="upload-meta" id="uploadMeta">&#x53EA;&#x652F;&#x6301; JPG / PNG / WEBP / GIF&#xFF0C;&#x5355;&#x5F20;&#x4E0D;&#x8981;&#x8D85;&#x8FC7; 50MB</div>
-            <input id="imageFile" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple style="display:none;">
+            <div class="upload-meta" id="uploadMeta">&#x53EA;&#x652F;&#x6301; JPG / PNG / WEBP / AVIF / GIF&#xFF0C;&#x5355;&#x5F20;&#x4E0D;&#x8981;&#x8D85;&#x8FC7; 50MB</div>
+            <input id="imageFile" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" multiple style="display:none;">
           </div>
 
           <div>
@@ -534,7 +538,7 @@ const SERVER_SAVE_API = "api/save-gallery.php";
 const SERVER_IMAGE_UPLOAD_API = "api/upload-gallery-image.php";
 const PREVIEW_PATH_PREFIX = "../";
 const MAX_IMAGE_SIZE = 50 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg","image/png","image/webp","image/gif"]);
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg","image/png","image/webp","image/avif","image/gif"]);
 const EMPTY_PREVIEW_HTML = `
   <div class="upload-empty">
     <strong>&#x70B9;&#x51FB;&#x9009;&#x56FE;&#x3001;&#x6279;&#x91CF;&#x9009;&#x56FE;&#x3001;&#x76F4;&#x63A5;&#x62D6;&#x8FDB;&#x6765;&#xFF0C;&#x6216;&#x8005; Ctrl+V &#x7C98;&#x8D34;&#x56FE;&#x7247;</strong><br>
@@ -573,6 +577,7 @@ let editingIndex = -1;
 let embeddedImageData = "";
 let uploadedImagePath = "";
 let uploadedThumbPath = "";
+let uploadedThumbAvifPath = "";
 let manualAuthHeader = "";
 
 function escapeHtml(value){
@@ -603,7 +608,7 @@ function sanitizeTitle(value){
 
 function isDataImageUrl(value){
   const clean = String(value || "").trim();
-  return /^data:image\/(?:png|jpe?g|webp|gif);base64,/i.test(clean) && !/[\u0000-\u001f\u007f<>"']/.test(clean);
+  return /^data:image\/(?:png|jpe?g|webp|avif|gif);base64,/i.test(clean) && !/[\u0000-\u001f\u007f<>"']/.test(clean);
 }
 
 function isUploadedImagePath(value){
@@ -632,7 +637,7 @@ function sanitizeFilename(value){
   if(!extMatch) return "";
 
   const ext = extMatch[1].toLowerCase() === "jpeg" ? "jpg" : extMatch[1].toLowerCase();
-  if(!["jpg", "png", "webp", "gif"].includes(ext)){
+  if(!["jpg", "png", "webp", "avif", "gif"].includes(ext)){
     return "";
   }
 
@@ -691,10 +696,12 @@ function normalizeItem(raw){
   const imageFromUpload = isDataImageUrl(raw.image) ? String(raw.image).trim() : "";
   const uploadedPath = normalizeUploadedImagePath(raw.image);
   const uploadedThumb = normalizeUploadedImagePath(raw.thumb);
+  const uploadedThumbAvif = normalizeUploadedImagePath(raw.thumbAvif);
   const manualPath = normalizeManualImagePath(raw.image);
   const filename = sanitizeFilename(raw.filename) || getFilenameFromImage(uploadedPath || imageFromUpload || manualPath);
   const image = uploadedPath || imageFromUpload || manualPath || (filename ? BASE_IMAGE_PATH + filename : "");
   const thumb = uploadedThumb && uploadedThumb !== image ? uploadedThumb : "";
+  const thumbAvif = uploadedThumbAvif && uploadedThumbAvif !== image ? uploadedThumbAvif : "";
   const link = sanitizeLink(raw.link);
 
   return {
@@ -702,6 +709,7 @@ function normalizeItem(raw){
     filename,
     image,
     thumb,
+    thumbAvif,
     link,
     sort:normalizeSort(raw.sort),
     enabled:raw.enabled !== false
@@ -713,6 +721,7 @@ function exportItems(){
     title:item.title,
     image:item.image,
     thumb:item.thumb || "",
+    thumbAvif:item.thumbAvif || "",
     link:item.link,
     sort:item.sort,
     enabled:item.enabled
@@ -729,18 +738,19 @@ function saveDraft(){
   countPill.textContent = `${items.length} \u5f20\u56fe\u7247`;
 }
 
-function showUploadPreview(src, meta, isEmbedded, thumb = ""){
+function showUploadPreview(src, meta, isEmbedded, thumb = "", thumbAvif = ""){
   uploadBox.classList.toggle("has-image", Boolean(src));
   if(src){
     uploadPreview.innerHTML = `<img src="${escapeHtml(getPreviewSrc(thumb || src))}" alt="preview">`;
     uploadMeta.textContent = meta;
   }else{
     uploadPreview.innerHTML = EMPTY_PREVIEW_HTML;
-    uploadMeta.textContent = "\u53ea\u652f\u6301 JPG / PNG / WEBP / GIF\uff0c\u5355\u5f20\u4e0d\u8981\u8d85\u8fc7 50MB";
+    uploadMeta.textContent = "\u53ea\u652f\u6301 JPG / PNG / WEBP / AVIF / GIF\uff0c\u5355\u5f20\u4e0d\u8981\u8d85\u8fc7 50MB";
   }
   embeddedImageData = isEmbedded ? src : "";
   uploadedImagePath = !isEmbedded && isUploadedImagePath(src) ? src : "";
   uploadedThumbPath = !isEmbedded && isUploadedImagePath(thumb) ? thumb : "";
+  uploadedThumbAvifPath = !isEmbedded && isUploadedImagePath(thumbAvif) ? thumbAvif : "";
 }
 
 function updatePreviewFromFilename(){
@@ -758,6 +768,7 @@ function clearForm(){
   embeddedImageData = "";
   uploadedImagePath = "";
   uploadedThumbPath = "";
+  uploadedThumbAvifPath = "";
   titleInput.value = "";
   filenameInput.value = "";
   linkInput.value = "";
@@ -779,7 +790,7 @@ function fillForm(item, index){
   if(isDataImageUrl(item.image)){
     showUploadPreview(item.image, "\u5f53\u524d\u662f\u5df2\u5185\u5d4c\u7684\u8d34\u56fe", true);
   }else if(isUploadedImagePath(item.image)){
-    showUploadPreview(item.image, `\u5f53\u524d\u4f7f\u7528\u5df2\u4e0a\u4f20\u56fe\u7247\uff1a${item.image}`, false, item.thumb || "");
+    showUploadPreview(item.image, `\u5f53\u524d\u4f7f\u7528\u5df2\u4e0a\u4f20\u56fe\u7247\uff1a${item.image}`, false, item.thumb || "", item.thumbAvif || "");
   }else if(item.image){
     showUploadPreview(item.image, `\u5f53\u524d\u4f7f\u7528\u6587\u4ef6\u8def\u5f84\uff1a${item.image}`, false);
   }else{
@@ -791,14 +802,20 @@ function fillForm(item, index){
 
 function renderThumb(item){
   const thumb = item.thumb || item.image;
+  const thumbAvif = item.thumbAvif || "";
   if(!thumb){
     return `<div class="thumb">\u6682\u65e0\u56fe\u7247</div>`;
   }
 
+  const avifSource = thumbAvif ? `<source srcset="${escapeHtml(getPreviewSrc(thumbAvif))}" type="image/avif">` : "";
+
   return `
     <div class="thumb">
-      <img src="${escapeHtml(getPreviewSrc(thumb))}" alt="${escapeHtml(item.title || "image")}" loading="lazy"
-        onerror="this.style.display='none';this.parentNode.textContent='Image missing';">
+      <picture>
+        ${avifSource}
+        <img src="${escapeHtml(getPreviewSrc(thumb))}" alt="${escapeHtml(item.title || "image")}" loading="lazy"
+          onerror="this.style.display='none';this.closest('.thumb').textContent='Image missing';">
+      </picture>
     </div>
   `;
 }
@@ -818,6 +835,7 @@ function renderList(){
         <div class="meta-line">\u6587\u4ef6\u540d\uff1a${escapeHtml(item.filename || "\u5185\u5d4c\u8d34\u56fe")}</div>
         <div class="meta-line">\u56fe\u7247\u6765\u6e90\uff1a${escapeHtml(isDataImageUrl(item.image) ? "\u76f4\u63a5\u5199\u5165 JSON" : item.image || "-")}</div>
         <div class="meta-line">\u7f29\u7565\u56fe\uff1a${escapeHtml(item.thumb || "\u81ea\u52a8\u4f7f\u7528\u539f\u56fe")}</div>
+        <div class="meta-line">AVIF\uff1a${escapeHtml(item.thumbAvif || "\u6ca1\u6709\u751f\u6210")}</div>
         <div class="meta-line">\u94fe\u63a5\uff1a${escapeHtml(item.link || "\u65e0")}</div>
         <div class="chip">\u6392\u5e8f ${item.sort}</div>
         <div class="chip">${item.enabled ? "\u663e\u793a\u4e2d" : "\u5df2\u9690\u85cf"}</div>
@@ -852,13 +870,14 @@ function getFormItem(){
   const safeFilename = sanitizeFilename(filenameInput.value);
   const image = uploadedImagePath || embeddedImageData || (safeFilename ? BASE_IMAGE_PATH + safeFilename : "");
   const thumb = uploadedThumbPath && uploadedThumbPath !== image ? uploadedThumbPath : "";
+  const thumbAvif = uploadedThumbAvifPath && uploadedThumbAvifPath !== image ? uploadedThumbAvifPath : "";
   if(!image){
     setStatus("\u8bf7\u5148\u9009\u56fe\u3001\u62d6\u56fe\u3001\u7c98\u8d34\u56fe\uff0c\u6216\u8005\u586b\u5199\u56fe\u7247\u6587\u4ef6\u540d\u3002", true);
     return null;
   }
 
   if(filenameInput.value.trim() && !safeFilename){
-    setStatus("\u56fe\u7247\u6587\u4ef6\u540d\u53ea\u80fd\u7528 jpg/png/webp/gif\uff0c\u4e14\u4e0d\u80fd\u542b\u5371\u9669\u5b57\u7b26\u3002", true);
+    setStatus("\u56fe\u7247\u6587\u4ef6\u540d\u53ea\u80fd\u7528 jpg/png/webp/avif/gif\uff0c\u4e14\u4e0d\u80fd\u542b\u5371\u9669\u5b57\u7b26\u3002", true);
     filenameInput.focus();
     return null;
   }
@@ -868,6 +887,7 @@ function getFormItem(){
     filename:safeFilename,
     image,
     thumb,
+    thumbAvif,
     link:safeLinkValue,
     sort:sortInput.value || 0,
     enabled:enabledInput.checked
@@ -1035,6 +1055,7 @@ function loadExportItems(list){
       filename:getFilenameFromImage(item?.image),
       image:item?.image,
       thumb:item?.thumb,
+      thumbAvif:item?.thumbAvif,
       link:item?.link,
       sort:item?.sort,
       enabled:item?.enabled
@@ -1122,7 +1143,8 @@ async function uploadImageFile(file, authHeader = ""){
   }
   return {
     path:String(result.path),
-    thumb:result.thumb ? String(result.thumb) : ""
+    thumb:result.thumb ? String(result.thumb) : "",
+    thumbAvif:result.thumbAvif ? String(result.thumbAvif) : ""
   };
 }
 
@@ -1146,7 +1168,7 @@ async function handleImageFile(file){
   if(!file) return;
 
   if(!ALLOWED_IMAGE_TYPES.has(file.type)){
-    setStatus("\u53ea\u652f\u6301 JPG / PNG / WEBP / GIF \u56fe\u7247\u3002", true);
+    setStatus("\u53ea\u652f\u6301 JPG / PNG / WEBP / AVIF / GIF \u56fe\u7247\u3002", true);
     return;
   }
 
@@ -1161,6 +1183,7 @@ async function handleImageFile(file){
     const uploadResult = await uploadImageWithAuthRetry(file);
     const imagePath = uploadResult.path;
     const thumbPath = uploadResult.thumb || "";
+    const thumbAvifPath = uploadResult.thumbAvif || "";
     if(!titleInput.value.trim()){
       titleInput.value = defaultTitleFromFilename(safeName);
     }
@@ -1168,7 +1191,7 @@ async function handleImageFile(file){
       filenameInput.value = safeName;
     }
 
-    showUploadPreview(imagePath, `\u5df2\u4e0a\u4f20\uff1a${safeName} | ${Math.round(file.size / 1024)}KB | \u5df2\u4fdd\u7559\u539f\u56fe${thumbPath ? "\uff0c\u5df2\u751f\u6210\u7f29\u7565\u56fe" : ""}`, false, thumbPath);
+    showUploadPreview(imagePath, `\u5df2\u4e0a\u4f20\uff1a${safeName} | ${Math.round(file.size / 1024)}KB | \u5df2\u4fdd\u7559\u539f\u56fe${thumbPath ? "\uff0c\u5df2\u751f\u6210 WebP \u7f29\u7565\u56fe" : ""}${thumbAvifPath ? "\uff0c\u5df2\u751f\u6210 AVIF" : ""}`, false, thumbPath, thumbAvifPath);
     setStatus("\u56fe\u7247\u5df2\u4e0a\u4f20\u3002\u70b9\u201c\u65b0\u589e\u5230\u5217\u8868\u201d\u540e\uff0c\u518d\u70b9\u201c\u540c\u6b65\u670d\u52a1\u5668\u201d\u3002");
   }catch(error){
     setStatus(`\u56fe\u7247\u4e0a\u4f20\u5931\u8d25\uff1a${error.message}\u3002`, true);
@@ -1208,11 +1231,13 @@ async function handleImageFiles(fileList){
         const uploadResult = await uploadImageWithAuthRetry(file);
         const imagePath = uploadResult.path;
         const thumbPath = uploadResult.thumb || "";
+        const thumbAvifPath = uploadResult.thumbAvif || "";
         items.push(normalizeItem({
           title:defaultTitleFromFilename(safeName),
           filename:safeName,
           image:imagePath,
           thumb:thumbPath,
+          thumbAvif:thumbAvifPath,
           link:"",
           sort:nextSortValue(),
           enabled:true
